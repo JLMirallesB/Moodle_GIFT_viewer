@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador GIFT de Moodle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f7931e 0%, #ff6900 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .language-selector label {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .language-selector select {
+            padding: 8px 12px;
+            border: 2px solid white;
+            border-radius: 4px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .language-selector select:hover {
+            background: #f8f9fa;
+        }
+
+        .language-selector select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        }
+
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #f7931e;
+        }
+
+        .button-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #f7931e;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #e07d0e;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .summary-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+        }
+
+        .summary-count {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 0.9em;
+            opacity: 0.95;
+        }
+
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #f7931e;
+        }
+
+        .question-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .question-number {
+            color: #f7931e;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .question-title {
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+
+        .question-type-badge {
+            display: inline-block;
+            background: #f7931e;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+
+        .question-body {
+            padding: 20px;
+        }
+
+        .question-text {
+            color: #333;
+            font-size: 1.05em;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .answers-list {
+            list-style: none;
+        }
+
+        .answer-item {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 2px solid #e9ecef;
+            display: flex;
+            align-items: start;
+            transition: all 0.3s;
+        }
+
+        .answer-item:hover {
+            background: #e9ecef;
+        }
+
+        .answer-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            border: 2px solid #6c757d;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .answer-marker.checkbox {
+            border-radius: 3px;
+        }
+
+        .answer-item.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .answer-item.correct .answer-marker {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+        .answer-item.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .answer-item.incorrect .answer-marker {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .answer-item.partial {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .answer-item.partial .answer-marker {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: white;
+        }
+
+        .answer-content {
+            flex: 1;
+        }
+
+        .answer-text {
+            color: #333;
+            font-size: 1em;
+        }
+
+        .answer-feedback {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #555;
+            font-style: italic;
+        }
+
+        .answer-weight {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .matching-pair {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 2px solid #28a745;
+        }
+
+        .matching-question {
+            flex: 1;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .matching-arrow {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .matching-answer {
+            flex: 1;
+            color: #555;
+        }
+
+        .numerical-answer {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 4px;
+            border: 2px solid #28a745;
+        }
+
+        .numerical-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 8px;
+        }
+
+        .numerical-details {
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .essay-placeholder {
+            background: #f8f9fa;
+            padding: 20px;
+            border: 2px dashed #6c757d;
+            border-radius: 4px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .input-box {
+            background: #f8f9fa;
+            padding: 12px;
+            border: 2px solid #6c757d;
+            border-radius: 4px;
+            min-height: 40px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 5px solid #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 5px solid #17a2b8;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding: 25px;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
+        }
+
+        footer p {
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        footer a {
+            color: #f7931e;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: #ff6900;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+                padding-right: 0;
+            }
+            
+            .question-card {
+                border-left-width: 3px;
+            }
+
+            .matching-pair {
+                flex-direction: column;
+                align-items: start;
+            }
+
+            .matching-arrow {
+                transform: rotate(90deg);
+            }
+
+            .language-selector {
+                position: static;
+                margin-top: 15px;
+                justify-content: center;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="language-selector">
+                <label for="languageSelect" id="langLabel">🌐 Idioma:</label>
+                <select id="languageSelect" onchange="changeLanguage()">
+                    <option value="es">Español</option>
+                    <option value="ca">Català</option>
+                    <option value="eu">Euskara</option>
+                    <option value="gl">Galego</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                </select>
+            </div>
+            <h1 id="mainTitle">📚 Visualizador GIFT de Moodle</h1>
+            <p id="mainSubtitle">Visualiza tus preguntas en formato GIFT de manera clara y organizada</p>
+        </div>
+
+        <div class="input-section">
+            <h2 id="inputTitle">Ingresa tu código GIFT</h2>
+            <textarea id="giftInput" placeholder=""></textarea>
+            <div class="button-group">
+                <button onclick="parseGIFT()" id="parseBtn">🔍 Visualizar Preguntas</button>
+                <button class="secondary" onclick="loadExample()" id="exampleBtn">📝 Cargar Ejemplo</button>
+                <button class="secondary" onclick="clearAll()" id="clearBtn">🗑️ Limpiar</button>
+            </div>
+        </div>
+
+        <div id="output"></div>
+
+        <footer>
+            <p id="footerCreated">Creado por <strong>José Luis Miralles Bono</strong></p>
+            <p><a href="https://www.jlmirall.es" target="_blank" rel="noopener noreferrer">www.jlmirall.es</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Traducciones
+        const translations = {
+            es: {
+                mainTitle: '📚 Visualizador GIFT de Moodle',
+                mainSubtitle: 'Visualiza tus preguntas en formato GIFT de manera clara y organizada',
+                inputTitle: 'Ingresa tu código GIFT',
+                parseBtn: '🔍 Visualizar Preguntas',
+                exampleBtn: '📝 Cargar Ejemplo',
+                clearBtn: '🗑️ Limpiar',
+                langLabel: '🌐 Idioma:',
+                footerCreated: 'Creado por',
+                emptyTitle: 'No hay preguntas para mostrar',
+                emptyText: 'Ingresa código GIFT en el área de texto superior',
+                noQuestionsFound: 'No se encontraron preguntas válidas en el código GIFT proporcionado.',
+                errorParsing: 'Error al procesar el código GIFT:',
+                questionsFound: 'Se encontraron',
+                questions: 'pregunta(s)',
+                summaryTitle: '📊 Resumen de Preguntas',
+                questionNumber: 'Pregunta',
+                types: {
+                    multipleChoice: 'Opción múltiple',
+                    multipleResponse: 'Respuesta múltiple',
+                    trueFalse: 'Verdadero/Falso',
+                    shortAnswer: 'Respuesta corta',
+                    matching: 'Emparejamiento',
+                    numerical: 'Numérica',
+                    essay: 'Ensayo'
+                },
+                typeLabels: {
+                    multipleChoice: 'Opción múltiple',
+                    multipleResponse: 'Respuesta múltiple',
+                    trueFalse: 'Verdadero/Falso',
+                    shortAnswer: 'Respuesta corta',
+                    matching: 'Emparejamiento',
+                    numerical: 'Numérica',
+                    essay: 'Ensayo'
+                },
+                true: 'Verdadero',
+                false: 'Falso',
+                shortAnswerExpected: 'Respuesta de texto corto esperada',
+                acceptedAnswers: 'Respuestas correctas aceptadas:',
+                essayText: 'El estudiante debe escribir una respuesta tipo ensayo',
+                essayManual: 'Esta pregunta requiere evaluación manual',
+                acceptedRange: 'Rango aceptado:',
+                placeholder: 'Pega aquí tu código GIFT...\n\nEjemplo:\n::Pregunta 1::¿Cuál es la capital de Francia?{\n=París #¡Correcto!\n~Londres #Incorrecto, esa es la capital de Inglaterra\n~Madrid #Incorrecto, esa es la capital de España\n}\n\n::Pregunta 2::La tierra es plana.{F}'
+            },
+            ca: {
+                mainTitle: '📚 Visualitzador GIFT de Moodle',
+                mainSubtitle: 'Visualitza les teves preguntes en format GIFT de manera clara i organitzada',
+                inputTitle: 'Introdueix el teu codi GIFT',
+                parseBtn: '🔍 Visualitzar Preguntes',
+                exampleBtn: '📝 Carregar Exemple',
+                clearBtn: '🗑️ Netejar',
+                langLabel: '🌐 Idioma:',
+                footerCreated: 'Creat per',
+                emptyTitle: 'No hi ha preguntes per mostrar',
+                emptyText: 'Introdueix codi GIFT a l\'àrea de text superior',
+                noQuestionsFound: 'No s\'han trobat preguntes vàlides al codi GIFT proporcionat.',
+                errorParsing: 'Error en processar el codi GIFT:',
+                questionsFound: 'S\'han trobat',
+                questions: 'pregunta/es',
+                summaryTitle: '📊 Resum de Preguntes',
+                questionNumber: 'Pregunta',
+                types: {
+                    multipleChoice: 'Opció múltiple',
+                    multipleResponse: 'Resposta múltiple',
+                    trueFalse: 'Vertader/Fals',
+                    shortAnswer: 'Resposta curta',
+                    matching: 'Emparellament',
+                    numerical: 'Numèrica',
+                    essay: 'Assaig'
+                },
+                typeLabels: {
+                    multipleChoice: 'Opció múltiple',
+                    multipleResponse: 'Resposta múltiple',
+                    trueFalse: 'Vertader/Fals',
+                    shortAnswer: 'Resposta curta',
+                    matching: 'Emparellament',
+                    numerical: 'Numèrica',
+                    essay: 'Assaig'
+                },
+                true: 'Vertader',
+                false: 'Fals',
+                shortAnswerExpected: 'Resposta de text curt esperada',
+                acceptedAnswers: 'Respostes correctes acceptades:',
+                essayText: 'L\'estudiant ha d\'escriure una resposta tipus assaig',
+                essayManual: 'Aquesta pregunta requereix avaluació manual',
+                acceptedRange: 'Rang acceptat:',
+                placeholder: 'Enganxa aquí el teu codi GIFT...\n\nExemple:\n::Pregunta 1::Quina és la capital de França?{\n=París #Correcte!\n~Londres #Incorrecte, aquesta és la capital d\'Anglaterra\n~Madrid #Incorrecte, aquesta és la capital d\'Espanya\n}\n\n::Pregunta 2::La terra és plana.{F}'
+            },
+            eu: {
+                mainTitle: '📚 Moodle-ren GIFT Bistaratzailea',
+                mainSubtitle: 'Bistaratu zure galderak GIFT formatuan modu argi eta antolatuan',
+                inputTitle: 'Sartu zure GIFT kodea',
+                parseBtn: '🔍 Galderak Bistaratu',
+                exampleBtn: '📝 Adibidea Kargatu',
+                clearBtn: '🗑️ Garbitu',
+                langLabel: '🌐 Hizkuntza:',
+                footerCreated: 'Egilea:',
+                emptyTitle: 'Ez dago galderarik erakusteko',
+                emptyText: 'Sartu GIFT kodea goiko testu eremuan',
+                noQuestionsFound: 'Ez da galdera baliozkorik aurkitu emandako GIFT kodean.',
+                errorParsing: 'Errorea GIFT kodea prozesatzean:',
+                questionsFound: 'Aurkitu dira',
+                questions: 'galdera',
+                summaryTitle: '📊 Galderen Laburpena',
+                questionNumber: 'Galdera',
+                types: {
+                    multipleChoice: 'Aukera anitza',
+                    multipleResponse: 'Erantzun anitza',
+                    trueFalse: 'Egia/Gezurra',
+                    shortAnswer: 'Erantzun laburra',
+                    matching: 'Parekatzea',
+                    numerical: 'Zenbakizkoa',
+                    essay: 'Saiakera'
+                },
+                typeLabels: {
+                    multipleChoice: 'Aukera anitza',
+                    multipleResponse: 'Erantzun anitza',
+                    trueFalse: 'Egia/Gezurra',
+                    shortAnswer: 'Erantzun laburra',
+                    matching: 'Parekatzea',
+                    numerical: 'Zenbakizkoa',
+                    essay: 'Saiakera'
+                },
+                true: 'Egia',
+                false: 'Gezurra',
+                shortAnswerExpected: 'Testu laburrezko erantzuna espero da',
+                acceptedAnswers: 'Onartutako erantzun zuzenak:',
+                essayText: 'Ikasleak saiakera moduko erantzun bat idatzi behar du',
+                essayManual: 'Galdera honek eskuzko ebaluazioa behar du',
+                acceptedRange: 'Onartutako tartea:',
+                placeholder: 'Itsatsi hemen zure GIFT kodea...\n\nAdibidea:\n::Galdera 1::Zein da Frantziaren hiriburua?{\n=Paris #Zuzena!\n~Londres #Okerra, hori Ingalaterraren hiriburua da\n~Madril #Okerra, hori Espainiaren hiriburua da\n}\n\n::Galdera 2::Lurra laua da.{F}'
+            },
+            gl: {
+                mainTitle: '📚 Visualizador GIFT de Moodle',
+                mainSubtitle: 'Visualiza as túas preguntas en formato GIFT de xeito claro e organizado',
+                inputTitle: 'Introduce o teu código GIFT',
+                parseBtn: '🔍 Visualizar Preguntas',
+                exampleBtn: '📝 Cargar Exemplo',
+                clearBtn: '🗑️ Limpar',
+                langLabel: '🌐 Idioma:',
+                footerCreated: 'Creado por',
+                emptyTitle: 'Non hai preguntas para mostrar',
+                emptyText: 'Introduce código GIFT na área de texto superior',
+                noQuestionsFound: 'Non se atoparon preguntas válidas no código GIFT proporcionado.',
+                errorParsing: 'Erro ao procesar o código GIFT:',
+                questionsFound: 'Atopáronse',
+                questions: 'pregunta(s)',
+                summaryTitle: '📊 Resumo de Preguntas',
+                questionNumber: 'Pregunta',
+                types: {
+                    multipleChoice: 'Opción múltiple',
+                    multipleResponse: 'Resposta múltiple',
+                    trueFalse: 'Verdadeiro/Falso',
+                    shortAnswer: 'Resposta curta',
+                    matching: 'Emparellamento',
+                    numerical: 'Numérica',
+                    essay: 'Ensaio'
+                },
+                typeLabels: {
+                    multipleChoice: 'Opción múltiple',
+                    multipleResponse: 'Resposta múltiple',
+                    trueFalse: 'Verdadeiro/Falso',
+                    shortAnswer: 'Resposta curta',
+                    matching: 'Emparellamento',
+                    numerical: 'Numérica',
+                    essay: 'Ensaio'
+                },
+                true: 'Verdadeiro',
+                false: 'Falso',
+                shortAnswerExpected: 'Resposta de texto curto esperada',
+                acceptedAnswers: 'Respostas correctas aceptadas:',
+                essayText: 'O estudante debe escribir unha resposta tipo ensaio',
+                essayManual: 'Esta pregunta require avaliación manual',
+                acceptedRange: 'Rango aceptado:',
+                placeholder: 'Pega aquí o teu código GIFT...\n\nExemplo:\n::Pregunta 1::Cal é a capital de Francia?{\n=París #Correcto!\n~Londres #Incorrecto, esa é a capital de Inglaterra\n~Madrid #Incorrecto, esa é a capital de España\n}\n\n::Pregunta 2::A terra é plana.{F}'
+            },
+            en: {
+                mainTitle: '📚 Moodle GIFT Viewer',
+                mainSubtitle: 'Visualize your GIFT format questions clearly and organized',
+                inputTitle: 'Enter your GIFT code',
+                parseBtn: '🔍 Visualize Questions',
+                exampleBtn: '📝 Load Example',
+                clearBtn: '🗑️ Clear',
+                langLabel: '🌐 Language:',
+                footerCreated: 'Created by',
+                emptyTitle: 'No questions to display',
+                emptyText: 'Enter GIFT code in the text area above',
+                noQuestionsFound: 'No valid questions found in the provided GIFT code.',
+                errorParsing: 'Error processing GIFT code:',
+                questionsFound: 'Found',
+                questions: 'question(s)',
+                summaryTitle: '📊 Questions Summary',
+                questionNumber: 'Question',
+                types: {
+                    multipleChoice: 'Multiple choice',
+                    multipleResponse: 'Multiple response',
+                    trueFalse: 'True/False',
+                    shortAnswer: 'Short answer',
+                    matching: 'Matching',
+                    numerical: 'Numerical',
+                    essay: 'Essay'
+                },
+                typeLabels: {
+                    multipleChoice: 'Multiple choice',
+                    multipleResponse: 'Multiple response',
+                    trueFalse: 'True/False',
+                    shortAnswer: 'Short answer',
+                    matching: 'Matching',
+                    numerical: 'Numerical',
+                    essay: 'Essay'
+                },
+                true: 'True',
+                false: 'False',
+                shortAnswerExpected: 'Short text answer expected',
+                acceptedAnswers: 'Accepted correct answers:',
+                essayText: 'Student must write an essay-type answer',
+                essayManual: 'This question requires manual evaluation',
+                acceptedRange: 'Accepted range:',
+                placeholder: 'Paste your GIFT code here...\n\nExample:\n::Question 1::What is the capital of France?{\n=Paris #Correct!\n~London #Incorrect, that\'s the capital of England\n~Madrid #Incorrect, that\'s the capital of Spain\n}\n\n::Question 2::The earth is flat.{F}'
+            },
+            fr: {
+                mainTitle: '📚 Visualiseur GIFT de Moodle',
+                mainSubtitle: 'Visualisez vos questions au format GIFT de manière claire et organisée',
+                inputTitle: 'Entrez votre code GIFT',
+                parseBtn: '🔍 Visualiser les Questions',
+                exampleBtn: '📝 Charger l\'Exemple',
+                clearBtn: '🗑️ Effacer',
+                langLabel: '🌐 Langue:',
+                footerCreated: 'Créé par',
+                emptyTitle: 'Aucune question à afficher',
+                emptyText: 'Entrez le code GIFT dans la zone de texte ci-dessus',
+                noQuestionsFound: 'Aucune question valide trouvée dans le code GIFT fourni.',
+                errorParsing: 'Erreur lors du traitement du code GIFT:',
+                questionsFound: 'Trouvé',
+                questions: 'question(s)',
+                summaryTitle: '📊 Résumé des Questions',
+                questionNumber: 'Question',
+                types: {
+                    multipleChoice: 'Choix multiple',
+                    multipleResponse: 'Réponse multiple',
+                    trueFalse: 'Vrai/Faux',
+                    shortAnswer: 'Réponse courte',
+                    matching: 'Appariement',
+                    numerical: 'Numérique',
+                    essay: 'Essai'
+                },
+                typeLabels: {
+                    multipleChoice: 'Choix multiple',
+                    multipleResponse: 'Réponse multiple',
+                    trueFalse: 'Vrai/Faux',
+                    shortAnswer: 'Réponse courte',
+                    matching: 'Appariement',
+                    numerical: 'Numérique',
+                    essay: 'Essai'
+                },
+                true: 'Vrai',
+                false: 'Faux',
+                shortAnswerExpected: 'Réponse texte courte attendue',
+                acceptedAnswers: 'Réponses correctes acceptées:',
+                essayText: 'L\'étudiant doit écrire une réponse de type essai',
+                essayManual: 'Cette question nécessite une évaluation manuelle',
+                acceptedRange: 'Plage acceptée:',
+                placeholder: 'Collez votre code GIFT ici...\n\nExemple:\n::Question 1::Quelle est la capitale de la France?{\n=Paris #Correct!\n~Londres #Incorrect, c\'est la capitale de l\'Angleterre\n~Madrid #Incorrect, c\'est la capitale de l\'Espagne\n}\n\n::Question 2::La terre est plate.{F}'
+            },
+            de: {
+                mainTitle: '📚 Moodle GIFT-Viewer',
+                mainSubtitle: 'Visualisieren Sie Ihre GIFT-Format-Fragen klar und organisiert',
+                inputTitle: 'Geben Sie Ihren GIFT-Code ein',
+                parseBtn: '🔍 Fragen Visualisieren',
+                exampleBtn: '📝 Beispiel Laden',
+                clearBtn: '🗑️ Löschen',
+                langLabel: '🌐 Sprache:',
+                footerCreated: 'Erstellt von',
+                emptyTitle: 'Keine Fragen anzuzeigen',
+                emptyText: 'Geben Sie GIFT-Code im obigen Textbereich ein',
+                noQuestionsFound: 'Keine gültigen Fragen im bereitgestellten GIFT-Code gefunden.',
+                errorParsing: 'Fehler beim Verarbeiten des GIFT-Codes:',
+                questionsFound: 'Gefunden',
+                questions: 'Frage(n)',
+                summaryTitle: '📊 Fragen-Zusammenfassung',
+                questionNumber: 'Frage',
+                types: {
+                    multipleChoice: 'Multiple-Choice',
+                    multipleResponse: 'Mehrfachantwort',
+                    trueFalse: 'Wahr/Falsch',
+                    shortAnswer: 'Kurzantwort',
+                    matching: 'Zuordnung',
+                    numerical: 'Numerisch',
+                    essay: 'Aufsatz'
+                },
+                typeLabels: {
+                    multipleChoice: 'Multiple-Choice',
+                    multipleResponse: 'Mehrfachantwort',
+                    trueFalse: 'Wahr/Falsch',
+                    shortAnswer: 'Kurzantwort',
+                    matching: 'Zuordnung',
+                    numerical: 'Numerisch',
+                    essay: 'Aufsatz'
+                },
+                true: 'Wahr',
+                false: 'Falsch',
+                shortAnswerExpected: 'Kurze Textantwort erwartet',
+                acceptedAnswers: 'Akzeptierte richtige Antworten:',
+                essayText: 'Der Student muss eine aufsatzartige Antwort schreiben',
+                essayManual: 'Diese Frage erfordert eine manuelle Bewertung',
+                acceptedRange: 'Akzeptierter Bereich:',
+                placeholder: 'Fügen Sie hier Ihren GIFT-Code ein...\n\nBeispiel:\n::Frage 1::Was ist die Hauptstadt von Frankreich?{\n=Paris #Richtig!\n~London #Falsch, das ist die Hauptstadt von England\n~Madrid #Falsch, das ist die Hauptstadt von Spanien\n}\n\n::Frage 2::Die Erde ist flach.{F}'
+            }
+        };
+
+        let currentLanguage = 'es';
+
+        // Detectar idioma del navegador al cargar
+        function detectBrowserLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const langCode = browserLang.split('-')[0];
+            
+            // Si el idioma detectado está en nuestras traducciones, usarlo
+            if (translations[langCode]) {
+                currentLanguage = langCode;
+            } else {
+                currentLanguage = 'es'; // Por defecto español
+            }
+            
+            document.getElementById('languageSelect').value = currentLanguage;
+            updateUILanguage();
+        }
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            updateUILanguage();
+        }
+
+        function updateUILanguage() {
+            const t = translations[currentLanguage];
+            
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+            document.getElementById('mainSubtitle').textContent = t.mainSubtitle;
+            document.getElementById('inputTitle').textContent = t.inputTitle;
+            document.getElementById('parseBtn').textContent = t.parseBtn;
+            document.getElementById('exampleBtn').textContent = t.exampleBtn;
+            document.getElementById('clearBtn').textContent = t.clearBtn;
+            document.getElementById('langLabel').textContent = t.langLabel;
+            document.getElementById('giftInput').placeholder = t.placeholder;
+            
+            // Actualizar el pie de página
+            const footerText = document.getElementById('footerCreated');
+            footerText.innerHTML = `${t.footerCreated} <strong>José Luis Miralles Bono</strong>`;
+        }
+
+        function parseGIFT() {
+            const input = document.getElementById('giftInput').value;
+            const output = document.getElementById('output');
+            const t = translations[currentLanguage];
+            
+            if (!input.trim()) {
+                output.innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3>${t.emptyTitle}</h3>
+                        <p>${t.emptyText}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const questions = parseGIFTFormat(input);
+                if (questions.length === 0) {
+                    output.innerHTML = `<div class="error-message">${t.noQuestionsFound}</div>`;
+                    return;
+                }
+                displayQuestions(questions);
+            } catch (error) {
+                output.innerHTML = `<div class="error-message">${t.errorParsing} ${error.message}</div>`;
+            }
+        }
+
+        function parseGIFTFormat(text) {
+            // Eliminar comentarios
+            text = text.replace(/^\/\/.*$/gm, '');
+            
+            // Separar preguntas por líneas en blanco
+            const questionBlocks = text.split(/\n\s*\n/).filter(block => block.trim());
+            
+            const questions = [];
+            
+            for (let block of questionBlocks) {
+                block = block.trim();
+                if (!block) continue;
+                
+                // Ignorar definiciones de categoría
+                if (block.startsWith('$CATEGORY:')) continue;
+                
+                const question = parseQuestion(block);
+                if (question) {
+                    questions.push(question);
+                }
+            }
+            
+            return questions;
+        }
+
+        function parseQuestion(block) {
+            let title = '';
+            let questionText = '';
+            let answersBlock = '';
+            
+            // Extraer título si existe (::titulo::)
+            const titleMatch = block.match(/^::([^:]+)::/);
+            if (titleMatch) {
+                title = titleMatch[1].trim();
+                block = block.substring(titleMatch[0].length).trim();
+            }
+            
+            // Encontrar el bloque de respuestas entre {}
+            const answersMatch = block.match(/\{([^}]*)\}/s);
+            if (!answersMatch) {
+                return null;
+            }
+            
+            answersBlock = answersMatch[1].trim();
+            questionText = block.substring(0, answersMatch.index).trim();
+            
+            // Si no hay título, usar el inicio del texto de la pregunta
+            if (!title) {
+                title = questionText.length > 50 ? questionText.substring(0, 50) + '...' : questionText;
+            }
+            
+            // Determinar el tipo de pregunta y parsear
+            const question = {
+                title: title,
+                text: questionText,
+                type: '',
+                answers: []
+            };
+            
+            // True/False
+            if (answersBlock === 'T' || answersBlock === 'TRUE' || answersBlock === 'F' || answersBlock === 'FALSE') {
+                question.type = 'trueFalse';
+                question.correctAnswer = answersBlock === 'T' || answersBlock === 'TRUE';
+                question.answers = [
+                    { text: translations[currentLanguage].true, correct: question.correctAnswer },
+                    { text: translations[currentLanguage].false, correct: !question.correctAnswer }
+                ];
+                return question;
+            }
+            
+            // Essay
+            if (answersBlock === '' || answersBlock === ' ') {
+                question.type = 'essay';
+                return question;
+            }
+            
+            // Numerical
+            if (answersBlock.startsWith('#')) {
+                question.type = 'numerical';
+                question.answers = parseNumericalAnswers(answersBlock);
+                return question;
+            }
+            
+            // Matching
+            if (answersBlock.includes('->')) {
+                question.type = 'matching';
+                question.pairs = parseMatchingPairs(answersBlock);
+                return question;
+            }
+            
+            // Short Answer (todas las respuestas con =)
+            const lines = answersBlock.split(/\n/).filter(l => l.trim());
+            const hasOnlyCorrect = lines.every(line => {
+                const trimmed = line.trim();
+                return trimmed.startsWith('=') || trimmed === '';
+            });
+            
+            if (hasOnlyCorrect && lines.length > 0) {
+                question.type = 'shortAnswer';
+                question.answers = parseShortAnswers(answersBlock);
+                return question;
+            }
+            
+            // Multiple Choice
+            question.type = 'multipleChoice';
+            question.answers = parseMultipleChoiceAnswers(answersBlock);
+            
+            // Determinar si es multiple choice con múltiples respuestas correctas
+            const correctCount = question.answers.filter(a => a.weight === 100).length;
+            if (correctCount > 1) {
+                question.type = 'multipleResponse';
+            }
+            
+            return question;
+        }
+
+        function parseMultipleChoiceAnswers(answersBlock) {
+            const answers = [];
+            const lines = answersBlock.split(/(?=[~=])/);
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                let weight = 0;
+                let correct = false;
+                let text = '';
+                let feedback = '';
+                
+                // Extraer peso si existe (%peso%)
+                const weightMatch = line.match(/^([~=])%(-?\d+)%/);
+                if (weightMatch) {
+                    weight = parseInt(weightMatch[2]);
+                    correct = weight > 0;
+                    line = line.substring(weightMatch[0].length);
+                } else if (line.startsWith('=')) {
+                    correct = true;
+                    weight = 100;
+                    line = line.substring(1);
+                } else if (line.startsWith('~')) {
+                    correct = false;
+                    weight = 0;
+                    line = line.substring(1);
+                }
+                
+                // Separar texto y feedback
+                const parts = line.split('#');
+                text = parts[0].trim();
+                if (parts.length > 1) {
+                    feedback = parts.slice(1).join('#').trim();
+                }
+                
+                if (text) {
+                    answers.push({ text, correct, weight, feedback });
+                }
+            }
+            
+            return answers;
+        }
+
+        function parseShortAnswers(answersBlock) {
+            const answers = [];
+            const lines = answersBlock.split(/(?==)/);
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || !line.startsWith('=')) continue;
+                
+                line = line.substring(1);
+                
+                let text = '';
+                let feedback = '';
+                let weight = 100;
+                
+                // Extraer peso si existe
+                const weightMatch = line.match(/^%(-?\d+)%/);
+                if (weightMatch) {
+                    weight = parseInt(weightMatch[1]);
+                    line = line.substring(weightMatch[0].length);
+                }
+                
+                // Separar texto y feedback
+                const parts = line.split('#');
+                text = parts[0].trim();
+                if (parts.length > 1) {
+                    feedback = parts.slice(1).join('#').trim();
+                }
+                
+                if (text) {
+                    answers.push({ text, weight, feedback });
+                }
+            }
+            
+            return answers;
+        }
+
+        function parseMatchingPairs(answersBlock) {
+            const pairs = [];
+            const lines = answersBlock.split(/\n/);
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || !line.includes('->')) continue;
+                
+                // Eliminar el = inicial si existe
+                if (line.startsWith('=')) {
+                    line = line.substring(1).trim();
+                }
+                
+                const parts = line.split('->');
+                if (parts.length === 2) {
+                    pairs.push({
+                        question: parts[0].trim(),
+                        answer: parts[1].trim()
+                    });
+                }
+            }
+            
+            return pairs;
+        }
+
+        function parseNumericalAnswers(answersBlock) {
+            const answers = [];
+            answersBlock = answersBlock.substring(1).trim(); // Remover el # inicial
+            
+            const lines = answersBlock.split(/(?=[=])/);
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                let weight = 100;
+                let value = 0;
+                let margin = 0;
+                let feedback = '';
+                
+                // Extraer peso si existe
+                if (line.startsWith('=')) {
+                    line = line.substring(1);
+                    
+                    // Peso parcial
+                    if (line.match(/^%(-?\d+)%/)) {
+                        const match = line.match(/^%(-?\d+)%/);
+                        weight = parseInt(match[1]);
+                        line = line.substring(match[0].length);
+                    }
+                    
+                    // Extraer valor numérico
+                    const numMatch = line.match(/^(-?\d+\.?\d*)/);
+                    if (numMatch) {
+                        value = parseFloat(numMatch[1]);
+                        line = line.substring(numMatch[0].length);
+                        
+                        // Extraer margen si existe
+                        if (line.startsWith(':')) {
+                            const marginMatch = line.substring(1).match(/^(-?\d+\.?\d*)/);
+                            if (marginMatch) {
+                                margin = parseFloat(marginMatch[1]);
+                                line = line.substring(marginMatch[0].length + 1);
+                            }
+                        }
+                        
+                        // Extraer rango si existe (formato ..)
+                        if (line.startsWith('..')) {
+                            const rangeMatch = line.substring(2).match(/^(-?\d+\.?\d*)/);
+                            if (rangeMatch) {
+                                const maxValue = parseFloat(rangeMatch[1]);
+                                margin = (maxValue - value) / 2;
+                                value = (value + maxValue) / 2;
+                                line = line.substring(rangeMatch[0].length + 2);
+                            }
+                        }
+                        
+                        // Extraer feedback
+                        if (line.includes('#')) {
+                            const parts = line.split('#');
+                            feedback = parts.slice(1).join('#').trim();
+                        }
+                        
+                        answers.push({ value, margin, weight, feedback });
+                    }
+                } else {
+                    // Sin = inicial, solo números
+                    const numMatch = line.match(/^(-?\d+\.?\d*)/);
+                    if (numMatch) {
+                        value = parseFloat(numMatch[1]);
+                        line = line.substring(numMatch[0].length);
+                        
+                        if (line.startsWith(':')) {
+                            const marginMatch = line.substring(1).match(/^(-?\d+\.?\d*)/);
+                            if (marginMatch) {
+                                margin = parseFloat(marginMatch[1]);
+                            }
+                        }
+                        
+                        answers.push({ value, margin, weight: 100, feedback: '' });
+                    }
+                }
+            }
+            
+            // Si no se encontraron respuestas con formato especial, intentar formato simple
+            if (answers.length === 0) {
+                const simpleMatch = answersBlock.match(/(-?\d+\.?\d*)/);
+                if (simpleMatch) {
+                    const value = parseFloat(simpleMatch[1]);
+                    const colonIndex = answersBlock.indexOf(':');
+                    let margin = 0;
+                    
+                    if (colonIndex > -1) {
+                        const marginMatch = answersBlock.substring(colonIndex + 1).match(/(-?\d+\.?\d*)/);
+                        if (marginMatch) {
+                            margin = parseFloat(marginMatch[1]);
+                        }
+                    }
+                    
+                    answers.push({ value, margin, weight: 100, feedback: '' });
+                }
+            }
+            
+            return answers;
+        }
+
+        function displayQuestions(questions) {
+            const output = document.getElementById('output');
+            const t = translations[currentLanguage];
+            
+            // Calcular resumen por tipo
+            const summary = {};
+            questions.forEach(q => {
+                summary[q.type] = (summary[q.type] || 0) + 1;
+            });
+            
+            let html = `<div class="info-box">${t.questionsFound} ${questions.length} ${t.questions}</div>`;
+            
+            // Mostrar resumen
+            html += `
+                <div class="summary-box">
+                    <div class="summary-title">
+                        ${t.summaryTitle}
+                    </div>
+                    <div class="summary-grid">
+            `;
+            
+            for (const [type, count] of Object.entries(summary)) {
+                html += `
+                    <div class="summary-item">
+                        <div class="summary-count">${count}</div>
+                        <div class="summary-label">${t.types[type]}</div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            html += '<div class="questions-container">';
+            
+            questions.forEach((question, index) => {
+                html += `
+                    <div class="question-card">
+                        <div class="question-header">
+                            <div class="question-number">${t.questionNumber} ${index + 1}</div>
+                            <div class="question-title">${escapeHtml(question.title)}</div>
+                            <span class="question-type-badge">${t.typeLabels[question.type]}</span>
+                        </div>
+                        <div class="question-body">
+                            <div class="question-text">${escapeHtml(question.text)}</div>
+                            ${renderAnswers(question)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            output.innerHTML = html;
+        }
+
+        function renderAnswers(question) {
+            switch (question.type) {
+                case 'multipleChoice':
+                case 'multipleResponse':
+                    return renderMultipleChoice(question);
+                case 'trueFalse':
+                    return renderTrueFalse(question);
+                case 'shortAnswer':
+                    return renderShortAnswer(question);
+                case 'matching':
+                    return renderMatching(question);
+                case 'numerical':
+                    return renderNumerical(question);
+                case 'essay':
+                    return renderEssay(question);
+                default:
+                    return '<p>Tipo de pregunta no soportado</p>';
+            }
+        }
+
+        function renderMultipleChoice(question) {
+            const isMultiple = question.type === 'multipleResponse';
+            let html = '<ul class="answers-list">';
+            
+            question.answers.forEach((answer, index) => {
+                let className = '';
+                let icon = '';
+                
+                if (answer.weight === 100) {
+                    className = 'correct';
+                    icon = '✓';
+                } else if (answer.weight > 0) {
+                    className = 'partial';
+                    icon = '◐';
+                } else {
+                    className = 'incorrect';
+                    icon = '✗';
+                }
+                
+                html += `
+                    <li class="answer-item ${className}">
+                        <div class="answer-marker ${isMultiple ? 'checkbox' : ''}">${icon}</div>
+                        <div class="answer-content">
+                            <div class="answer-text">
+                                ${escapeHtml(answer.text)}
+                                ${answer.weight !== 0 && answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                            </div>
+                            ${answer.feedback ? `<div class="answer-feedback">💬 ${escapeHtml(answer.feedback)}</div>` : ''}
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            return html;
+        }
+
+        function renderTrueFalse(question) {
+            let html = '<ul class="answers-list">';
+            
+            question.answers.forEach(answer => {
+                const className = answer.correct ? 'correct' : 'incorrect';
+                const icon = answer.correct ? '✓' : '✗';
+                
+                html += `
+                    <li class="answer-item ${className}">
+                        <div class="answer-marker">${icon}</div>
+                        <div class="answer-content">
+                            <div class="answer-text">${answer.text}</div>
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            return html;
+        }
+
+        function renderShortAnswer(question) {
+            const t = translations[currentLanguage];
+            let html = `<div class="input-box">${t.shortAnswerExpected}</div>`;
+            html += `<div style="margin-top: 15px;"><strong>${t.acceptedAnswers}</strong></div>`;
+            html += '<ul class="answers-list">';
+            
+            question.answers.forEach(answer => {
+                const className = answer.weight === 100 ? 'correct' : 'partial';
+                
+                html += `
+                    <li class="answer-item ${className}">
+                        <div class="answer-marker">✓</div>
+                        <div class="answer-content">
+                            <div class="answer-text">
+                                ${escapeHtml(answer.text)}
+                                ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                            </div>
+                            ${answer.feedback ? `<div class="answer-feedback">💬 ${escapeHtml(answer.feedback)}</div>` : ''}
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            return html;
+        }
+
+        function renderMatching(question) {
+            let html = '<div>';
+            
+            question.pairs.forEach(pair => {
+                html += `
+                    <div class="matching-pair">
+                        <div class="matching-question">${escapeHtml(pair.question)}</div>
+                        <div class="matching-arrow">→</div>
+                        <div class="matching-answer">${escapeHtml(pair.answer)}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        function renderNumerical(question) {
+            const t = translations[currentLanguage];
+            let html = '<div>';
+            
+            question.answers.forEach(answer => {
+                html += `
+                    <div class="numerical-answer" style="background: ${answer.weight === 100 ? '#d4edda' : '#fff3cd'}; border-color: ${answer.weight === 100 ? '#28a745' : '#ffc107'}; margin-bottom: 10px;">
+                        <div class="numerical-value">
+                            ${answer.value}${answer.margin > 0 ? ` ± ${answer.margin}` : ''}
+                            ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                        </div>
+                        ${answer.margin > 0 ? `<div class="numerical-details">${t.acceptedRange} ${answer.value - answer.margin} a ${answer.value + answer.margin}</div>` : ''}
+                        ${answer.feedback ? `<div class="answer-feedback">💬 ${escapeHtml(answer.feedback)}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        function renderEssay(question) {
+            const t = translations[currentLanguage];
+            return `
+                <div class="essay-placeholder">
+                    <p>📝 ${t.essayText}</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">${t.essayManual}</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function loadExample() {
+            const examples = {
+                es: `// Ejemplo completo de preguntas GIFT
+
+::Opción Múltiple Simple::¿Cuál es la capital de Francia?{
+=París #¡Correcto! París es la capital de Francia.
+~Londres #Incorrecto. Londres es la capital del Reino Unido.
+~Madrid #Incorrecto. Madrid es la capital de España.
+~Berlín #Incorrecto. Berlín es la capital de Alemania.
+}
+
+::Verdadero o Falso::La Tierra es plana.{F}
+
+::Respuesta Múltiple::¿Cuáles de los siguientes son lenguajes de programación? {
+~%50%Python #Correcto, Python es un lenguaje de programación.
+~%50%JavaScript #Correcto, JavaScript es un lenguaje de programación.
+~HTML #Incorrecto, HTML es un lenguaje de marcado, no de programación.
+~CSS #Incorrecto, CSS es un lenguaje de estilos, no de programación.
+}
+
+::Respuesta Corta::¿Quién escribió Don Quijote de la Mancha?{
+=Miguel de Cervantes
+=Cervantes
+=Miguel Cervantes
+}
+
+::Emparejamiento::Relaciona cada país con su capital.{
+=España -> Madrid
+=Francia -> París
+=Italia -> Roma
+=Alemania -> Berlín
+}
+
+::Pregunta Numérica::¿Cuál es el valor de pi con dos decimales? {#3.14:0.01}
+
+::Pregunta Numérica con Crédito Parcial::¿En qué año se descubrió América?{#
+=1492:0 #¡Exacto! Cristóbal Colón llegó a América en 1492.
+=%50%1490:2 #Casi correcto. Fue en 1492, tienes 50% de crédito por estar cerca.
+}
+
+::Pregunta de Ensayo::Explica la importancia de la Revolución Francesa en la historia europea.{}
+
+::Palabra Perdida::Isaac Newton es famoso por formular la ley de la {=gravitación =gravedad =gravitación universal}.`,
+                en: `// Complete GIFT questions example
+
+::Simple Multiple Choice::What is the capital of France?{
+=Paris #Correct! Paris is the capital of France.
+~London #Incorrect. London is the capital of the UK.
+~Madrid #Incorrect. Madrid is the capital of Spain.
+~Berlin #Incorrect. Berlin is the capital of Germany.
+}
+
+::True or False::The Earth is flat.{F}
+
+::Multiple Response::Which of the following are programming languages? {
+~%50%Python #Correct, Python is a programming language.
+~%50%JavaScript #Correct, JavaScript is a programming language.
+~HTML #Incorrect, HTML is a markup language, not a programming language.
+~CSS #Incorrect, CSS is a styling language, not a programming language.
+}
+
+::Short Answer::Who wrote Don Quixote?{
+=Miguel de Cervantes
+=Cervantes
+=de Cervantes
+}
+
+::Matching::Match each country with its capital.{
+=Spain -> Madrid
+=France -> Paris
+=Italy -> Rome
+=Germany -> Berlin
+}
+
+::Numerical Question::What is the value of pi to two decimal places? {#3.14:0.01}
+
+::Numerical Question with Partial Credit::In what year was America discovered?{#
+=1492:0 #Exactly! Columbus reached America in 1492.
+=%50%1490:2 #Close. It was 1492, you get 50% credit for being close.
+}
+
+::Essay Question::Explain the importance of the French Revolution in European history.{}
+
+::Missing Word::Isaac Newton is famous for formulating the law of {=gravitation =gravity =universal gravitation}.`
+            };
+
+            const example = examples[currentLanguage] || examples['es'];
+            document.getElementById('giftInput').value = example;
+            parseGIFT();
+        }
+
+        function clearAll() {
+            document.getElementById('giftInput').value = '';
+            document.getElementById('output').innerHTML = '';
+        }
+
+        // Detectar idioma del navegador al cargar la página
+        window.addEventListener('load', () => {
+            detectBrowserLanguage();
+            
+            const input = document.getElementById('giftInput').value;
+            if (input.trim()) {
+                parseGIFT();
+            }
+        });
+    </script>
+</body>
+</html>

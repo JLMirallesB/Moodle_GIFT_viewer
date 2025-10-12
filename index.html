@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador GIFT de Moodle</title>
+    <title>Visualizador GIFT de Moodle (con soporte mlang)</title>
     <style>
         * {
             margin: 0;
@@ -511,8 +511,8 @@
                     <option value="de">Deutsch</option>
                 </select>
             </div>
-            <h1 id="mainTitle">📚 Visualizador GIFT de Moodle</h1>
-            <p id="mainSubtitle">Visualiza tus preguntas en formato GIFT de manera clara y organizada</p>
+            <h1 id="mainTitle">📚 Visualizador GIFT de Moodle (con soporte mlang)</h1>
+            <p id="mainSubtitle">Visualiza tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).</p>
         </div>
 
         <div class="input-section">
@@ -522,6 +522,12 @@
                 <button onclick="parseGIFT()" id="parseBtn">🔍 Visualizar Preguntas</button>
                 <button class="secondary" onclick="loadExample()" id="exampleBtn">📝 Cargar Ejemplo</button>
                 <button class="secondary" onclick="clearAll()" id="clearBtn">🗑️ Limpiar</button>
+            </div>
+             <!-- Contenedor para el selector de idioma del contenido (mlang) -->
+            <div id="contentLanguageSelectorContainer" style="display: none; margin-top: 20px; background: #eef2f5; padding: 15px; border-radius: 6px; border: 1px solid #ddd;">
+                <p id="detectedLanguagesInfo" style="font-size: 0.9em; color: #555; margin-bottom: 10px;"></p>
+                <label id="contentLangLabel" for="contentLanguageSelect" style="font-weight: 600; color: #333; margin-right: 10px;">🌍 Ver pregunta en el idioma:</label>
+                <select id="contentLanguageSelect" onchange="handleContentLanguageChange()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px;"></select>
             </div>
         </div>
 
@@ -537,13 +543,15 @@
         // Traducciones
         const translations = {
             es: {
-                mainTitle: '📚 Visualizador GIFT de Moodle',
-                mainSubtitle: 'Visualiza tus preguntas en formato GIFT de manera clara y organizada',
+                mainTitle: '📚 Visualizador GIFT de Moodle (con soporte mlang)',
+                mainSubtitle: 'Visualiza tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).',
                 inputTitle: 'Ingresa tu código GIFT',
                 parseBtn: '🔍 Visualizar Preguntas',
                 exampleBtn: '📝 Cargar Ejemplo',
                 clearBtn: '🗑️ Limpiar',
                 langLabel: '🌐 Idioma:',
+                contentLangLabel: '🌍 Ver pregunta en el idioma:',
+                detectedLangsLabel: 'Idiomas detectados:',
                 footerCreated: 'Creado por',
                 emptyTitle: 'No hay preguntas para mostrar',
                 emptyText: 'Ingresa código GIFT en el área de texto superior',
@@ -581,13 +589,15 @@
                 placeholder: 'Pega aquí tu código GIFT...\n\nEjemplo:\n::Pregunta 1::¿Cuál es la capital de Francia?{\n=París #¡Correcto!\n~Londres #Incorrecto, esa es la capital de Inglaterra\n~Madrid #Incorrecto, esa es la capital de España\n}\n\n::Pregunta 2::La tierra es plana.{F}'
             },
             ca: {
-                mainTitle: '📚 Visualitzador GIFT de Moodle',
-                mainSubtitle: 'Visualitza les teves preguntes en format GIFT de manera clara i organitzada',
+                mainTitle: '📚 Visualitzador GIFT de Moodle (amb suport mlang)',
+                mainSubtitle: 'Visualitza les teves preguntes en format GIFT, incloent-hi contingut multilingüe (mlang).',
                 inputTitle: 'Introdueix el teu codi GIFT',
                 parseBtn: '🔍 Visualitzar Preguntes',
                 exampleBtn: '📝 Carregar Exemple',
                 clearBtn: '🗑️ Netejar',
                 langLabel: '🌐 Idioma:',
+                contentLangLabel: '🌍 Veure pregunta en l\'idioma:',
+                detectedLangsLabel: 'Idiomes detectats:',
                 footerCreated: 'Creat per',
                 emptyTitle: 'No hi ha preguntes per mostrar',
                 emptyText: 'Introdueix codi GIFT a l\'àrea de text superior',
@@ -625,13 +635,15 @@
                 placeholder: 'Enganxa aquí el teu codi GIFT...\n\nExemple:\n::Pregunta 1::Quina és la capital de França?{\n=París #Correcte!\n~Londres #Incorrecte, aquesta és la capital d\'Anglaterra\n~Madrid #Incorrecte, aquesta és la capital d\'Espanya\n}\n\n::Pregunta 2::La terra és plana.{F}'
             },
             eu: {
-                mainTitle: '📚 Moodle-ren GIFT Bistaratzailea',
-                mainSubtitle: 'Bistaratu zure galderak GIFT formatuan modu argi eta antolatuan',
+                mainTitle: '📚 Moodle-ren GIFT Bistaratzailea (mlang-ekin bateragarria)',
+                mainSubtitle: 'Bistaratu zure galderak GIFT formatuan, hizkuntza anitzeko edukia barne (mlang).',
                 inputTitle: 'Sartu zure GIFT kodea',
                 parseBtn: '🔍 Galderak Bistaratu',
                 exampleBtn: '📝 Adibidea Kargatu',
                 clearBtn: '🗑️ Garbitu',
                 langLabel: '🌐 Hizkuntza:',
+                contentLangLabel: '🌍 Galdera hizkuntza honetan ikusi:',
+                detectedLangsLabel: 'Atzemandako hizkuntzak:',
                 footerCreated: 'Egilea:',
                 emptyTitle: 'Ez dago galderarik erakusteko',
                 emptyText: 'Sartu GIFT kodea goiko testu eremuan',
@@ -669,13 +681,15 @@
                 placeholder: 'Itsatsi hemen zure GIFT kodea...\n\nAdibidea:\n::Galdera 1::Zein da Frantziaren hiriburua?{\n=Paris #Zuzena!\n~Londres #Okerra, hori Ingalaterraren hiriburua da\n~Madril #Okerra, hori Espainiaren hiriburua da\n}\n\n::Galdera 2::Lurra laua da.{F}'
             },
             gl: {
-                mainTitle: '📚 Visualizador GIFT de Moodle',
-                mainSubtitle: 'Visualiza as túas preguntas en formato GIFT de xeito claro e organizado',
+                mainTitle: '📚 Visualizador GIFT de Moodle (con soporte mlang)',
+                mainSubtitle: 'Visualiza as túas preguntas en formato GIFT, incluíndo contido multilingüe (mlang).',
                 inputTitle: 'Introduce o teu código GIFT',
                 parseBtn: '🔍 Visualizar Preguntas',
                 exampleBtn: '📝 Cargar Exemplo',
                 clearBtn: '🗑️ Limpar',
                 langLabel: '🌐 Idioma:',
+                contentLangLabel: '🌍 Ver pregunta no idioma:',
+                detectedLangsLabel: 'Idiomas detectados:',
                 footerCreated: 'Creado por',
                 emptyTitle: 'Non hai preguntas para mostrar',
                 emptyText: 'Introduce código GIFT na área de texto superior',
@@ -713,13 +727,15 @@
                 placeholder: 'Pega aquí o teu código GIFT...\n\nExemplo:\n::Pregunta 1::Cal é a capital de Francia?{\n=París #Correcto!\n~Londres #Incorrecto, esa é a capital de Inglaterra\n~Madrid #Incorrecto, esa é a capital de España\n}\n\n::Pregunta 2::A terra é plana.{F}'
             },
             en: {
-                mainTitle: '📚 Moodle GIFT Viewer',
-                mainSubtitle: 'Visualize your GIFT format questions clearly and organized',
+                mainTitle: '📚 Moodle GIFT Viewer (mlang supported)',
+                mainSubtitle: 'Visualize your GIFT format questions, including multilingual content (mlang).',
                 inputTitle: 'Enter your GIFT code',
                 parseBtn: '🔍 Visualize Questions',
                 exampleBtn: '📝 Load Example',
                 clearBtn: '🗑️ Clear',
                 langLabel: '🌐 Language:',
+                contentLangLabel: '🌍 View question in language:',
+                detectedLangsLabel: 'Detected languages:',
                 footerCreated: 'Created by',
                 emptyTitle: 'No questions to display',
                 emptyText: 'Enter GIFT code in the text area above',
@@ -757,13 +773,15 @@
                 placeholder: 'Paste your GIFT code here...\n\nExample:\n::Question 1::What is the capital of France?{\n=Paris #Correct!\n~London #Incorrect, that\'s the capital of England\n~Madrid #Incorrect, that\'s the capital of Spain\n}\n\n::Question 2::The earth is flat.{F}'
             },
             fr: {
-                mainTitle: '📚 Visualiseur GIFT de Moodle',
-                mainSubtitle: 'Visualisez vos questions au format GIFT de manière claire et organisée',
+                mainTitle: '📚 Visualiseur GIFT de Moodle (avec support mlang)',
+                mainSubtitle: 'Visualisez vos questions au format GIFT, y compris le contenu multilingue (mlang).',
                 inputTitle: 'Entrez votre code GIFT',
                 parseBtn: '🔍 Visualiser les Questions',
                 exampleBtn: '📝 Charger l\'Exemple',
                 clearBtn: '🗑️ Effacer',
                 langLabel: '🌐 Langue:',
+                contentLangLabel: '🌍 Voir la question en langue :',
+                detectedLangsLabel: 'Langues détectées :',
                 footerCreated: 'Créé par',
                 emptyTitle: 'Aucune question à afficher',
                 emptyText: 'Entrez le code GIFT dans la zone de texte ci-dessus',
@@ -801,13 +819,15 @@
                 placeholder: 'Collez votre code GIFT ici...\n\nExemple:\n::Question 1::Quelle est la capitale de la France?{\n=Paris #Correct!\n~Londres #Incorrect, c\'est la capitale de l\'Angleterre\n~Madrid #Incorrect, c\'est la capitale de l\'Espagne\n}\n\n::Question 2::La terre est plate.{F}'
             },
             de: {
-                mainTitle: '📚 Moodle GIFT-Viewer',
-                mainSubtitle: 'Visualisieren Sie Ihre GIFT-Format-Fragen klar und organisiert',
+                mainTitle: '📚 Moodle GIFT-Viewer (mit mlang-Unterstützung)',
+                mainSubtitle: 'Visualisieren Sie Ihre GIFT-Format-Fragen, einschließlich mehrsprachiger Inhalte (mlang).',
                 inputTitle: 'Geben Sie Ihren GIFT-Code ein',
                 parseBtn: '🔍 Fragen Visualisieren',
                 exampleBtn: '📝 Beispiel Laden',
                 clearBtn: '🗑️ Löschen',
                 langLabel: '🌐 Sprache:',
+                contentLangLabel: '🌍 Frage in Sprache anzeigen:',
+                detectedLangsLabel: 'Erkannte Sprachen:',
                 footerCreated: 'Erstellt von',
                 emptyTitle: 'Keine Fragen anzuzeigen',
                 emptyText: 'Geben Sie GIFT-Code im obigen Textbereich ein',
@@ -848,16 +868,20 @@
 
         let currentLanguage = 'es';
 
-        // Detectar idioma del navegador al cargar
+        // --- INICIO: Variables globales para mlang ---
+        let originalParsedQuestions = [];
+        let detectedContentLanguages = new Set();
+        let selectedContentLanguage = null;
+        // --- FIN: Variables globales para mlang ---
+
         function detectBrowserLanguage() {
             const browserLang = navigator.language || navigator.userLanguage;
             const langCode = browserLang.split('-')[0];
             
-            // Si el idioma detectado está en nuestras traducciones, usarlo
             if (translations[langCode]) {
                 currentLanguage = langCode;
             } else {
-                currentLanguage = 'es'; // Por defecto español
+                currentLanguage = 'es'; 
             }
             
             document.getElementById('languageSelect').value = currentLanguage;
@@ -867,6 +891,9 @@
         function changeLanguage() {
             currentLanguage = document.getElementById('languageSelect').value;
             updateUILanguage();
+            if (originalParsedQuestions.length > 0) {
+                filterAndDisplayQuestions();
+            }
         }
 
         function updateUILanguage() {
@@ -880,17 +907,124 @@
             document.getElementById('clearBtn').textContent = t.clearBtn;
             document.getElementById('langLabel').textContent = t.langLabel;
             document.getElementById('giftInput').placeholder = t.placeholder;
+            document.getElementById('contentLangLabel').textContent = t.contentLangLabel;
             
-            // Actualizar el pie de página
             const footerText = document.getElementById('footerCreated');
             footerText.innerHTML = `${t.footerCreated} <strong>José Luis Miralles Bono</strong>`;
+
+            const infoEl = document.getElementById('detectedLanguagesInfo');
+            if (detectedContentLanguages.size > 0) {
+                const languages = Array.from(detectedContentLanguages).sort();
+                infoEl.innerHTML = `<strong>${t.detectedLangsLabel}</strong> ${languages.join(', ')}`;
+            }
         }
+        
+        // --- INICIO: Nuevas funciones para mlang ---
+
+        function handleContentLanguageChange() {
+            selectedContentLanguage = document.getElementById('contentLanguageSelect').value;
+            filterAndDisplayQuestions();
+        }
+
+        function processMlangText(text, targetLang) {
+            if (!text || typeof text !== 'string' || !targetLang) {
+                return text;
+            }
+
+            const fullBlockRegex = /(?:\\\{mlang [a-zA-Z_\-]+\s*\\\}.*?\\\{mlang\\\})+/gs;
+
+            return text.replace(fullBlockRegex, (fullBlock) => {
+                const langSpecificRegex = /\\\{mlang ([a-zA-Z_\-]+)\s*\\\}(.*?)\\\{mlang\\\}/gs;
+                const langs = {};
+                let match;
+                while ((match = langSpecificRegex.exec(fullBlock)) !== null) {
+                    langs[match[1]] = match[2];
+                }
+
+                if (langs[targetLang]) {
+                    return langs[targetLang];
+                }
+                const firstLang = Object.keys(langs)[0];
+                return firstLang ? langs[firstLang] : ''; 
+            });
+        }
+
+        function filterAndDisplayQuestions() {
+            if (!originalParsedQuestions || originalParsedQuestions.length === 0) {
+                document.getElementById('output').innerHTML = '';
+                return;
+            }
+
+            if (!selectedContentLanguage || detectedContentLanguages.size === 0) {
+                displayQuestions(originalParsedQuestions);
+                return;
+            }
+
+            const filteredQuestions = JSON.parse(JSON.stringify(originalParsedQuestions));
+
+            filteredQuestions.forEach(question => {
+                question.title = processMlangText(question.title, selectedContentLanguage);
+                question.text = processMlangText(question.text, selectedContentLanguage);
+
+                if (question.answers) {
+                    question.answers.forEach(answer => {
+                        answer.text = processMlangText(answer.text, selectedContentLanguage);
+                        if (answer.feedback) {
+                            answer.feedback = processMlangText(answer.feedback, selectedContentLanguage);
+                        }
+                    });
+                }
+                if (question.pairs) {
+                    question.pairs.forEach(pair => {
+                        pair.question = processMlangText(pair.question, selectedContentLanguage);
+                        pair.answer = processMlangText(pair.answer, selectedContentLanguage);
+                    });
+                }
+            });
+
+            displayQuestions(filteredQuestions);
+        }
+
+        function updateContentLanguageSelector() {
+            const container = document.getElementById('contentLanguageSelectorContainer');
+            const select = document.getElementById('contentLanguageSelect');
+            const infoEl = document.getElementById('detectedLanguagesInfo');
+
+            if (detectedContentLanguages.size > 0) {
+                select.innerHTML = '';
+                const languages = Array.from(detectedContentLanguages).sort();
+                
+                infoEl.innerHTML = `<strong>${translations[currentLanguage].detectedLangsLabel}</strong> ${languages.join(', ')}`;
+
+                languages.forEach(lang => {
+                    const option = document.createElement('option');
+                    option.value = lang;
+                    option.textContent = lang.toUpperCase();
+                    select.appendChild(option);
+                });
+                
+                selectedContentLanguage = languages[0];
+                select.value = selectedContentLanguage;
+
+                container.style.display = 'block';
+            } else {
+                selectedContentLanguage = null;
+                infoEl.innerHTML = '';
+                container.style.display = 'none';
+            }
+        }
+        
+        // --- FIN: Nuevas funciones para mlang ---
 
         function parseGIFT() {
             const input = document.getElementById('giftInput').value;
             const output = document.getElementById('output');
             const t = translations[currentLanguage];
             
+            originalParsedQuestions = [];
+            detectedContentLanguages.clear();
+            selectedContentLanguage = null;
+
             if (!input.trim()) {
                 output.innerHTML = `
                     <div class="empty-state">
@@ -901,43 +1035,49 @@
                         <p>${t.emptyText}</p>
                     </div>
                 `;
+                updateContentLanguageSelector(); 
                 return;
             }
 
+            const langRegex = /\\\{mlang ([a-zA-Z_\-]+)\s*\\\}/g;
+            let match;
+            while ((match = langRegex.exec(input)) !== null) {
+                detectedContentLanguages.add(match[1]);
+            }
+            
+            updateContentLanguageSelector();
+
             try {
-                const questions = parseGIFTFormat(input);
-                if (questions.length === 0) {
+                originalParsedQuestions = parseGIFTFormat(input);
+                
+                if (originalParsedQuestions.length === 0) {
                     output.innerHTML = `<div class="error-message">${t.noQuestionsFound}</div>`;
+                    document.getElementById('contentLanguageSelectorContainer').style.display = 'none';
                     return;
                 }
-                displayQuestions(questions);
+
+                filterAndDisplayQuestions();
+
             } catch (error) {
                 output.innerHTML = `<div class="error-message">${t.errorParsing} ${error.message}</div>`;
+                document.getElementById('contentLanguageSelectorContainer').style.display = 'none';
             }
         }
 
         function parseGIFTFormat(text) {
-            // Eliminar comentarios
             text = text.replace(/^\/\/.*$/gm, '');
-            
-            // Separar preguntas por líneas en blanco
             const questionBlocks = text.split(/\n\s*\n/).filter(block => block.trim());
-            
             const questions = [];
             
             for (let block of questionBlocks) {
                 block = block.trim();
-                if (!block) continue;
-                
-                // Ignorar definiciones de categoría
-                if (block.startsWith('$CATEGORY:')) continue;
+                if (!block || block.startsWith('$CATEGORY:')) continue;
                 
                 const question = parseQuestion(block);
                 if (question) {
                     questions.push(question);
                 }
             }
-            
             return questions;
         }
 
@@ -946,28 +1086,56 @@
             let questionText = '';
             let answersBlock = '';
             
-            // Extraer título si existe (::titulo::)
             const titleMatch = block.match(/^::([^:]+)::/);
             if (titleMatch) {
                 title = titleMatch[1].trim();
                 block = block.substring(titleMatch[0].length).trim();
             }
             
-            // Encontrar el bloque de respuestas entre {}
-            const answersMatch = block.match(/\{([^}]*)\}/s);
-            if (!answersMatch) {
-                return null;
+            let braceIndex = -1;
+            let i = 0;
+            while ((i = block.indexOf('{', i)) !== -1) {
+                if (i > 0 && block[i - 1] === '\\') {
+                    i++;
+                    continue;
+                }
+                braceIndex = i;
+                break;
+            }
+    
+            if (braceIndex === -1) {
+                return null; 
+            }
+    
+            let depth = 0;
+            let closingBraceIndex = -1;
+            for (let j = braceIndex; j < block.length; j++) {
+                const char = block[j];
+                if (j > 0 && block[j - 1] === '\\') {
+                    continue;
+                }
+                if (char === '{') {
+                    depth++;
+                } else if (char === '}') {
+                    depth--;
+                    if (depth === 0) {
+                        closingBraceIndex = j;
+                        break;
+                    }
+                }
+            }
+    
+            if (closingBraceIndex === -1) {
+                return null; 
             }
             
-            answersBlock = answersMatch[1].trim();
-            questionText = block.substring(0, answersMatch.index).trim();
+            questionText = block.substring(0, braceIndex).trim();
+            answersBlock = block.substring(braceIndex + 1, closingBraceIndex).trim();
             
-            // Si no hay título, usar el inicio del texto de la pregunta
             if (!title) {
                 title = questionText.length > 50 ? questionText.substring(0, 50) + '...' : questionText;
             }
             
-            // Determinar el tipo de pregunta y parsear
             const question = {
                 title: title,
                 text: questionText,
@@ -975,38 +1143,29 @@
                 answers: []
             };
             
-            // True/False
             if (answersBlock === 'T' || answersBlock === 'TRUE' || answersBlock === 'F' || answersBlock === 'FALSE') {
                 question.type = 'trueFalse';
                 question.correctAnswer = answersBlock === 'T' || answersBlock === 'TRUE';
-                question.answers = [
-                    { text: translations[currentLanguage].true, correct: question.correctAnswer },
-                    { text: translations[currentLanguage].false, correct: !question.correctAnswer }
-                ];
                 return question;
             }
             
-            // Essay
             if (answersBlock === '' || answersBlock === ' ') {
                 question.type = 'essay';
                 return question;
             }
             
-            // Numerical
             if (answersBlock.startsWith('#')) {
                 question.type = 'numerical';
                 question.answers = parseNumericalAnswers(answersBlock);
                 return question;
             }
             
-            // Matching
             if (answersBlock.includes('->')) {
                 question.type = 'matching';
                 question.pairs = parseMatchingPairs(answersBlock);
                 return question;
             }
             
-            // Short Answer (todas las respuestas con =)
             const lines = answersBlock.split(/\n/).filter(l => l.trim());
             const hasOnlyCorrect = lines.every(line => {
                 const trimmed = line.trim();
@@ -1019,11 +1178,9 @@
                 return question;
             }
             
-            // Multiple Choice
             question.type = 'multipleChoice';
             question.answers = parseMultipleChoiceAnswers(answersBlock);
             
-            // Determinar si es multiple choice con múltiples respuestas correctas
             const correctCount = question.answers.filter(a => a.weight === 100).length;
             if (correctCount > 1) {
                 question.type = 'multipleResponse';
@@ -1045,7 +1202,6 @@
                 let text = '';
                 let feedback = '';
                 
-                // Extraer peso si existe (%peso%)
                 const weightMatch = line.match(/^([~=])%(-?\d+)%/);
                 if (weightMatch) {
                     weight = parseInt(weightMatch[2]);
@@ -1061,7 +1217,6 @@
                     line = line.substring(1);
                 }
                 
-                // Separar texto y feedback
                 const parts = line.split('#');
                 text = parts[0].trim();
                 if (parts.length > 1) {
@@ -1090,14 +1245,12 @@
                 let feedback = '';
                 let weight = 100;
                 
-                // Extraer peso si existe
                 const weightMatch = line.match(/^%(-?\d+)%/);
                 if (weightMatch) {
                     weight = parseInt(weightMatch[1]);
                     line = line.substring(weightMatch[0].length);
                 }
                 
-                // Separar texto y feedback
                 const parts = line.split('#');
                 text = parts[0].trim();
                 if (parts.length > 1) {
@@ -1120,7 +1273,6 @@
                 line = line.trim();
                 if (!line || !line.includes('->')) continue;
                 
-                // Eliminar el = inicial si existe
                 if (line.startsWith('=')) {
                     line = line.substring(1).trim();
                 }
@@ -1139,7 +1291,7 @@
 
         function parseNumericalAnswers(answersBlock) {
             const answers = [];
-            answersBlock = answersBlock.substring(1).trim(); // Remover el # inicial
+            answersBlock = answersBlock.substring(1).trim();
             
             const lines = answersBlock.split(/(?=[=])/);
             
@@ -1152,24 +1304,20 @@
                 let margin = 0;
                 let feedback = '';
                 
-                // Extraer peso si existe
                 if (line.startsWith('=')) {
                     line = line.substring(1);
                     
-                    // Peso parcial
                     if (line.match(/^%(-?\d+)%/)) {
                         const match = line.match(/^%(-?\d+)%/);
                         weight = parseInt(match[1]);
                         line = line.substring(match[0].length);
                     }
                     
-                    // Extraer valor numérico
                     const numMatch = line.match(/^(-?\d+\.?\d*)/);
                     if (numMatch) {
                         value = parseFloat(numMatch[1]);
                         line = line.substring(numMatch[0].length);
                         
-                        // Extraer margen si existe
                         if (line.startsWith(':')) {
                             const marginMatch = line.substring(1).match(/^(-?\d+\.?\d*)/);
                             if (marginMatch) {
@@ -1178,7 +1326,6 @@
                             }
                         }
                         
-                        // Extraer rango si existe (formato ..)
                         if (line.startsWith('..')) {
                             const rangeMatch = line.substring(2).match(/^(-?\d+\.?\d*)/);
                             if (rangeMatch) {
@@ -1189,7 +1336,6 @@
                             }
                         }
                         
-                        // Extraer feedback
                         if (line.includes('#')) {
                             const parts = line.split('#');
                             feedback = parts.slice(1).join('#').trim();
@@ -1198,7 +1344,6 @@
                         answers.push({ value, margin, weight, feedback });
                     }
                 } else {
-                    // Sin = inicial, solo números
                     const numMatch = line.match(/^(-?\d+\.?\d*)/);
                     if (numMatch) {
                         value = parseFloat(numMatch[1]);
@@ -1216,7 +1361,6 @@
                 }
             }
             
-            // Si no se encontraron respuestas con formato especial, intentar formato simple
             if (answers.length === 0) {
                 const simpleMatch = answersBlock.match(/(-?\d+\.?\d*)/);
                 if (simpleMatch) {
@@ -1242,7 +1386,6 @@
             const output = document.getElementById('output');
             const t = translations[currentLanguage];
             
-            // Calcular resumen por tipo
             const summary = {};
             questions.forEach(q => {
                 summary[q.type] = (summary[q.type] || 0) + 1;
@@ -1250,7 +1393,6 @@
             
             let html = `<div class="info-box">${t.questionsFound} ${questions.length} ${t.questions}</div>`;
             
-            // Mostrar resumen
             html += `
                 <div class="summary-box">
                     <div class="summary-title">
@@ -1263,7 +1405,7 @@
                 html += `
                     <div class="summary-item">
                         <div class="summary-count">${count}</div>
-                        <div class="summary-label">${t.types[type]}</div>
+                        <div class="summary-label">${t.types[type] || type}</div>
                     </div>
                 `;
             }
@@ -1353,11 +1495,18 @@
         }
 
         function renderTrueFalse(question) {
+            const t = translations[currentLanguage];
             let html = '<ul class="answers-list">';
             
-            question.answers.forEach(answer => {
-                const className = answer.correct ? 'correct' : 'incorrect';
-                const icon = answer.correct ? '✓' : '✗';
+            const answers = [
+                { text: t.true, isCorrect: true },
+                { text: t.false, isCorrect: false }
+            ];
+
+            answers.forEach(answer => {
+                const correct = (answer.isCorrect === question.correctAnswer);
+                const className = correct ? 'correct' : 'incorrect';
+                const icon = correct ? '✓' : '✗';
                 
                 html += `
                     <li class="answer-item ${className}">
@@ -1449,6 +1598,7 @@
         }
 
         function escapeHtml(text) {
+            if (typeof text !== 'string') return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
@@ -1456,7 +1606,14 @@
 
         function loadExample() {
             const examples = {
-                es: `// Ejemplo completo de preguntas GIFT
+                es: `// Ejemplo con múltiples idiomas (mlang)
+::Pregunta Moodle con Mlang::\\{mlang es\\}¿Cuál es la capital de España?\\{mlang\\}\\{mlang en\\}What is the capital of Spain?\\{mlang\\}\\{mlang ca\\}Quina és la capital d'Espanya?\\{mlang\\} {
+=\\{mlang es\\}Madrid\\{mlang\\}\\{mlang en\\}Madrid\\{mlang\\}\\{mlang ca\\}Madrid\\{mlang\\}#\\{mlang es\\}¡Correcto!\\{mlang\\}\\{mlang en\\}Correct!\\{mlang\\}\\{mlang ca\\}Correcte!\\{mlang\\}
+~\\{mlang es\\}Barcelona\\{mlang\\}\\{mlang en\\}Barcelona\\{mlang\\}\\{mlang ca\\}Barcelona\\{mlang\\}
+~\\{mlang es\\}Lisboa\\{mlang\\}\\{mlang en\\}Lisbon\\{mlang\\}\\{mlang ca\\}Lisboa\\{mlang\\}
+}
+
+// Ejemplo completo de preguntas GIFT
 
 ::Opción Múltiple Simple::¿Cuál es la capital de Francia?{
 =París #¡Correcto! París es la capital de Francia.
@@ -1497,7 +1654,14 @@
 ::Pregunta de Ensayo::Explica la importancia de la Revolución Francesa en la historia europea.{}
 
 ::Palabra Perdida::Isaac Newton es famoso por formular la ley de la {=gravitación =gravedad =gravitación universal}.`,
-                en: `// Complete GIFT questions example
+                en: `// Example with multiple languages (mlang)
+::Moodle Mlang Question::\\{mlang es\\}¿Cuál es la capital de España?\\{mlang\\}\\{mlang en\\}What is the capital of Spain?\\{mlang\\}\\{mlang ca\\}Quina és la capital d'Espanya?\\{mlang\\} {
+=\\{mlang es\\}Madrid\\{mlang\\}\\{mlang en\\}Madrid\\{mlang\\}\\{mlang ca\\}Madrid\\{mlang\\}#\\{mlang es\\}¡Correcto!\\{mlang\\}\\{mlang en\\}Correct!\\{mlang\\}\\{mlang ca\\}Correcte!\\{mlang\\}
+~\\{mlang es\\}Barcelona\\{mlang\\}\\{mlang en\\}Barcelona\\{mlang\\}\\{mlang ca\\}Barcelona\\{mlang\\}
+~\\{mlang es\\}Lisboa\\{mlang\\}\\{mlang en\\}Lisbon\\{mlang\\}\\{mlang ca\\}Lisboa\\{mlang\\}
+}
+
+// Complete GIFT questions example
 
 ::Simple Multiple Choice::What is the capital of France?{
 =Paris #Correct! Paris is the capital of France.
@@ -1548,9 +1712,11 @@
         function clearAll() {
             document.getElementById('giftInput').value = '';
             document.getElementById('output').innerHTML = '';
+            detectedContentLanguages.clear();
+            updateContentLanguageSelector();
+            document.getElementById('detectedLanguagesInfo').innerHTML = '';
         }
 
-        // Detectar idioma del navegador al cargar la página
         window.addEventListener('load', () => {
             detectBrowserLanguage();
             
@@ -1562,3 +1728,5 @@
     </script>
 </body>
 </html>
+
+

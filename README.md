@@ -2,7 +2,7 @@
 
 
 Una herramienta web sencilla y potente para que docentes y creadores de contenido puedan previsualizar preguntas en **formato GIFT** de Moodle antes de importarlas a sus cursos. La herramienta ofrece soporte completo para el **filtro multilingüe (mlang)**, permitiendo verificar que las preguntas se mostrarán correctamente en cada idioma.  
-🔗 [**Accede a la herramienta aquí**](https://www.google.com/search?q=https://jlmirall.es/gift-viewer/)
+🔗 [**Accede a la herramienta aquí**](https://jlmirallesb.github.io/Moodle_GIFT_viewer/)
 
 ### **🤔 ¿Qué son estas tecnologías?**
 
@@ -45,7 +45,7 @@ Creado por **José Luis Miralles Bono** | [www.jlmirall.es](https://www.jlmirall
 
 🇬🇧 \<strong\>English\</strong\>
 A simple and powerful web tool for teachers and content creators to preview questions in Moodle's **GIFT format** before importing them into their courses. The tool fully supports the **multilingual filter (mlang)**, allowing verification that questions will display correctly in each language.  
-🔗 [**Access the tool here**](https://www.google.com/search?q=https://jlmirall.es/gift-viewer/)
+🔗 [**Access the tool here**](https://www.google.com/search?q=https://jlmirall.es/gift-viewer/](https://jlmirallesb.github.io/Moodle_GIFT_viewer/)
 
 ### **🤔 What are these technologies?**
 
@@ -89,7 +89,7 @@ Created by **José Luis Miralles Bono** | [www.jlmirall.es](https://www.jlmirall
 
 CAT \<strong\>Català\</strong\>
 Una eina web senzilla i potent perquè docents i creadors de contingut puguin previsualitzar preguntes en **format GIFT** de Moodle abans d'importar-les als seus cursos. L'eina ofereix suport complet per al **filtre multilingüe (mlang)**, cosa que permet verificar que les preguntes es mostraran correctament en cada idioma.  
-🔗 [**Accedeix a l'eina aquí**](https://www.google.com/search?q=https://jlmirall.es/gift-viewer/)
+🔗 [**Accedeix a l'eina aquí**](https://jlmirallesb.github.io/Moodle_GIFT_viewer/)
 
 ### **🤔 Què són aquestes tecnologies?**
 

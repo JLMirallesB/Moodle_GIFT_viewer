@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador GIFT de Moodle (con soporte mlang)</title>
+    <title>Visualizador GIFT de Moodle (con soporte mlang y edición)</title>
     <style>
         * {
             margin: 0;
@@ -141,6 +141,27 @@
             background: #5a6268;
         }
 
+        button.small {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        button.success:hover {
+            background: #218838;
+        }
+
+        button.info {
+            background: #17a2b8;
+        }
+
+        button.info:hover {
+            background: #138496;
+        }
+
         .summary-box {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -197,10 +218,15 @@
             border-left: 5px solid #f7931e;
         }
 
+        .question-card.edited {
+            border-left: 5px solid #28a745;
+        }
+
         .question-header {
             background: #f8f9fa;
             padding: 15px 20px;
             border-bottom: 2px solid #e9ecef;
+            position: relative;
         }
 
         .question-number {
@@ -229,6 +255,54 @@
             text-transform: uppercase;
         }
 
+        .question-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .question-lang-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .question-lang-selector select {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+        }
+
+        .edited-langs-indicator {
+            display: inline-flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .lang-badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .lang-badge.edited {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .lang-badge.not-edited {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         .question-body {
             padding: 20px;
         }
@@ -238,6 +312,51 @@
             font-size: 1.05em;
             margin-bottom: 20px;
             line-height: 1.7;
+            position: relative;
+        }
+
+        .editable-section {
+            position: relative;
+            padding: 10px;
+            border: 2px dashed transparent;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .editable-section:hover {
+            background: #f8f9fa;
+            border-color: #f7931e;
+        }
+
+        .edit-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .editable-section:hover .edit-button {
+            opacity: 1;
+        }
+
+        .edit-mode {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .edit-mode textarea {
+            width: 100%;
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .edit-mode-buttons {
+            display: flex;
+            gap: 8px;
         }
 
         .answers-list {
@@ -253,6 +372,7 @@
             display: flex;
             align-items: start;
             transition: all 0.3s;
+            position: relative;
         }
 
         .answer-item:hover {
@@ -438,6 +558,33 @@
             margin-bottom: 20px;
         }
 
+        .export-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .export-section.visible {
+            display: block;
+        }
+
+        .gift-code-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 15px;
+        }
+
         footer {
             margin-top: 60px;
             padding: 25px;
@@ -511,8 +658,8 @@
                     <option value="de">Deutsch</option>
                 </select>
             </div>
-            <h1 id="mainTitle">📚 Visualizador GIFT de Moodle (con soporte mlang)</h1>
-            <p id="mainSubtitle">Visualiza tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).</p>
+            <h1 id="mainTitle">📚 Visualizador GIFT de Moodle (con soporte mlang y edición)</h1>
+            <p id="mainSubtitle">Visualiza y edita tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).</p>
         </div>
 
         <div class="input-section">
@@ -523,11 +670,19 @@
                 <button class="secondary" onclick="loadExample()" id="exampleBtn">📝 Cargar Ejemplo</button>
                 <button class="secondary" onclick="clearAll()" id="clearBtn">🗑️ Limpiar</button>
             </div>
-             <!-- Contenedor para el selector de idioma del contenido (mlang) -->
             <div id="contentLanguageSelectorContainer" style="display: none; margin-top: 20px; background: #eef2f5; padding: 15px; border-radius: 6px; border: 1px solid #ddd;">
                 <p id="detectedLanguagesInfo" style="font-size: 0.9em; color: #555; margin-bottom: 10px;"></p>
                 <label id="contentLangLabel" for="contentLanguageSelect" style="font-weight: 600; color: #333; margin-right: 10px;">🌍 Ver pregunta en el idioma:</label>
                 <select id="contentLanguageSelect" onchange="handleContentLanguageChange()" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px;"></select>
+            </div>
+        </div>
+
+        <div id="exportSection" class="export-section">
+            <h2 id="exportTitle">📤 Exportar Código GIFT Editado</h2>
+            <div class="gift-code-preview" id="giftCodePreview"></div>
+            <div class="button-group">
+                <button class="success" onclick="copyGiftCode()" id="copyBtn">📋 Copiar Código</button>
+                <button class="info" onclick="downloadGiftFile()" id="downloadBtn">💾 Descargar Archivo</button>
             </div>
         </div>
 
@@ -543,8 +698,8 @@
         // Traducciones
         const translations = {
             es: {
-                mainTitle: '📚 Visualizador GIFT de Moodle (con soporte mlang)',
-                mainSubtitle: 'Visualiza tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).',
+                mainTitle: '📚 Visualizador GIFT de Moodle (con soporte mlang y edición)',
+                mainSubtitle: 'Visualiza y edita tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).',
                 inputTitle: 'Ingresa tu código GIFT',
                 parseBtn: '🔍 Visualizar Preguntas',
                 exampleBtn: '📝 Cargar Ejemplo',
@@ -561,6 +716,17 @@
                 questions: 'pregunta(s)',
                 summaryTitle: '📊 Resumen de Preguntas',
                 questionNumber: 'Pregunta',
+                viewInLang: 'Ver en:',
+                resetToGeneral: '🔄 Idioma general',
+                editedLanguages: 'Idiomas editados:',
+                notEditedLanguages: 'No editados:',
+                edit: '✏️ Editar',
+                save: '💾 Guardar',
+                cancel: '❌ Cancelar',
+                exportTitle: '📤 Exportar Código GIFT Editado',
+                copyBtn: '📋 Copiar Código',
+                downloadBtn: '💾 Descargar Archivo',
+                copiedSuccess: '✅ Código copiado al portapapeles',
                 types: {
                     multipleChoice: 'Opción múltiple',
                     multipleResponse: 'Respuesta múltiple',
@@ -589,8 +755,8 @@
                 placeholder: 'Pega aquí tu código GIFT...\n\nEjemplo:\n::Pregunta 1::¿Cuál es la capital de Francia?{\n=París #¡Correcto!\n~Londres #Incorrecto, esa es la capital de Inglaterra\n~Madrid #Incorrecto, esa es la capital de España\n}\n\n::Pregunta 2::La tierra es plana.{F}'
             },
             ca: {
-                mainTitle: '📚 Visualitzador GIFT de Moodle (amb suport mlang)',
-                mainSubtitle: 'Visualitza les teves preguntes en format GIFT, incloent-hi contingut multilingüe (mlang).',
+                mainTitle: '📚 Visualitzador GIFT de Moodle (amb suport mlang i edició)',
+                mainSubtitle: 'Visualitza i edita les teves preguntes en format GIFT, incloent-hi contingut multilingüe (mlang).',
                 inputTitle: 'Introdueix el teu codi GIFT',
                 parseBtn: '🔍 Visualitzar Preguntes',
                 exampleBtn: '📝 Carregar Exemple',
@@ -607,6 +773,17 @@
                 questions: 'pregunta/es',
                 summaryTitle: '📊 Resum de Preguntes',
                 questionNumber: 'Pregunta',
+                viewInLang: 'Veure en:',
+                resetToGeneral: '🔄 Idioma general',
+                editedLanguages: 'Idiomes editats:',
+                notEditedLanguages: 'No editats:',
+                edit: '✏️ Editar',
+                save: '💾 Guardar',
+                cancel: '❌ Cancel·lar',
+                exportTitle: '📤 Exportar Codi GIFT Editat',
+                copyBtn: '📋 Copiar Codi',
+                downloadBtn: '💾 Descarregar Fitxer',
+                copiedSuccess: '✅ Codi copiat al portapapers',
                 types: {
                     multipleChoice: 'Opció múltiple',
                     multipleResponse: 'Resposta múltiple',
@@ -632,103 +809,11 @@
                 essayText: 'L\'estudiant ha d\'escriure una resposta tipus assaig',
                 essayManual: 'Aquesta pregunta requereix avaluació manual',
                 acceptedRange: 'Rang acceptat:',
-                placeholder: 'Enganxa aquí el teu codi GIFT...\n\nExemple:\n::Pregunta 1::Quina és la capital de França?{\n=París #Correcte!\n~Londres #Incorrecte, aquesta és la capital d\'Anglaterra\n~Madrid #Incorrecte, aquesta és la capital d\'Espanya\n}\n\n::Pregunta 2::La terra és plana.{F}'
-            },
-            eu: {
-                mainTitle: '📚 Moodle-ren GIFT Bistaratzailea (mlang-ekin bateragarria)',
-                mainSubtitle: 'Bistaratu zure galderak GIFT formatuan, hizkuntza anitzeko edukia barne (mlang).',
-                inputTitle: 'Sartu zure GIFT kodea',
-                parseBtn: '🔍 Galderak Bistaratu',
-                exampleBtn: '📝 Adibidea Kargatu',
-                clearBtn: '🗑️ Garbitu',
-                langLabel: '🌐 Hizkuntza:',
-                contentLangLabel: '🌍 Galdera hizkuntza honetan ikusi:',
-                detectedLangsLabel: 'Atzemandako hizkuntzak:',
-                footerCreated: 'Egilea:',
-                emptyTitle: 'Ez dago galderarik erakusteko',
-                emptyText: 'Sartu GIFT kodea goiko testu eremuan',
-                noQuestionsFound: 'Ez da galdera baliozkorik aurkitu emandako GIFT kodean.',
-                errorParsing: 'Errorea GIFT kodea prozesatzean:',
-                questionsFound: 'Aurkitu dira',
-                questions: 'galdera',
-                summaryTitle: '📊 Galderen Laburpena',
-                questionNumber: 'Galdera',
-                types: {
-                    multipleChoice: 'Aukera anitza',
-                    multipleResponse: 'Erantzun anitza',
-                    trueFalse: 'Egia/Gezurra',
-                    shortAnswer: 'Erantzun laburra',
-                    matching: 'Parekatzea',
-                    numerical: 'Zenbakizkoa',
-                    essay: 'Saiakera'
-                },
-                typeLabels: {
-                    multipleChoice: 'Aukera anitza',
-                    multipleResponse: 'Erantzun anitza',
-                    trueFalse: 'Egia/Gezurra',
-                    shortAnswer: 'Erantzun laburra',
-                    matching: 'Parekatzea',
-                    numerical: 'Zenbakizkoa',
-                    essay: 'Saiakera'
-                },
-                true: 'Egia',
-                false: 'Gezurra',
-                shortAnswerExpected: 'Testu laburrezko erantzuna espero da',
-                acceptedAnswers: 'Onartutako erantzun zuzenak:',
-                essayText: 'Ikasleak saiakera moduko erantzun bat idatzi behar du',
-                essayManual: 'Galdera honek eskuzko ebaluazioa behar du',
-                acceptedRange: 'Onartutako tartea:',
-                placeholder: 'Itsatsi hemen zure GIFT kodea...\n\nAdibidea:\n::Galdera 1::Zein da Frantziaren hiriburua?{\n=Paris #Zuzena!\n~Londres #Okerra, hori Ingalaterraren hiriburua da\n~Madril #Okerra, hori Espainiaren hiriburua da\n}\n\n::Galdera 2::Lurra laua da.{F}'
-            },
-            gl: {
-                mainTitle: '📚 Visualizador GIFT de Moodle (con soporte mlang)',
-                mainSubtitle: 'Visualiza as túas preguntas en formato GIFT, incluíndo contido multilingüe (mlang).',
-                inputTitle: 'Introduce o teu código GIFT',
-                parseBtn: '🔍 Visualizar Preguntas',
-                exampleBtn: '📝 Cargar Exemplo',
-                clearBtn: '🗑️ Limpar',
-                langLabel: '🌐 Idioma:',
-                contentLangLabel: '🌍 Ver pregunta no idioma:',
-                detectedLangsLabel: 'Idiomas detectados:',
-                footerCreated: 'Creado por',
-                emptyTitle: 'Non hai preguntas para mostrar',
-                emptyText: 'Introduce código GIFT na área de texto superior',
-                noQuestionsFound: 'Non se atoparon preguntas válidas no código GIFT proporcionado.',
-                errorParsing: 'Erro ao procesar o código GIFT:',
-                questionsFound: 'Atopáronse',
-                questions: 'pregunta(s)',
-                summaryTitle: '📊 Resumo de Preguntas',
-                questionNumber: 'Pregunta',
-                types: {
-                    multipleChoice: 'Opción múltiple',
-                    multipleResponse: 'Resposta múltiple',
-                    trueFalse: 'Verdadeiro/Falso',
-                    shortAnswer: 'Resposta curta',
-                    matching: 'Emparellamento',
-                    numerical: 'Numérica',
-                    essay: 'Ensaio'
-                },
-                typeLabels: {
-                    multipleChoice: 'Opción múltiple',
-                    multipleResponse: 'Resposta múltiple',
-                    trueFalse: 'Verdadeiro/Falso',
-                    shortAnswer: 'Resposta curta',
-                    matching: 'Emparellamento',
-                    numerical: 'Numérica',
-                    essay: 'Ensaio'
-                },
-                true: 'Verdadeiro',
-                false: 'Falso',
-                shortAnswerExpected: 'Resposta de texto curto esperada',
-                acceptedAnswers: 'Respostas correctas aceptadas:',
-                essayText: 'O estudante debe escribir unha resposta tipo ensaio',
-                essayManual: 'Esta pregunta require avaliación manual',
-                acceptedRange: 'Rango aceptado:',
-                placeholder: 'Pega aquí o teu código GIFT...\n\nExemplo:\n::Pregunta 1::Cal é a capital de Francia?{\n=París #Correcto!\n~Londres #Incorrecto, esa é a capital de Inglaterra\n~Madrid #Incorrecto, esa é a capital de España\n}\n\n::Pregunta 2::A terra é plana.{F}'
+                placeholder: 'Enganxa aquí el teu codi GIFT...'
             },
             en: {
-                mainTitle: '📚 Moodle GIFT Viewer (mlang supported)',
-                mainSubtitle: 'Visualize your GIFT format questions, including multilingual content (mlang).',
+                mainTitle: '📚 Moodle GIFT Viewer (mlang supported + editing)',
+                mainSubtitle: 'Visualize and edit your GIFT format questions, including multilingual content (mlang).',
                 inputTitle: 'Enter your GIFT code',
                 parseBtn: '🔍 Visualize Questions',
                 exampleBtn: '📝 Load Example',
@@ -745,6 +830,17 @@
                 questions: 'question(s)',
                 summaryTitle: '📊 Questions Summary',
                 questionNumber: 'Question',
+                viewInLang: 'View in:',
+                resetToGeneral: '🔄 General language',
+                editedLanguages: 'Edited languages:',
+                notEditedLanguages: 'Not edited:',
+                edit: '✏️ Edit',
+                save: '💾 Save',
+                cancel: '❌ Cancel',
+                exportTitle: '📤 Export Edited GIFT Code',
+                copyBtn: '📋 Copy Code',
+                downloadBtn: '💾 Download File',
+                copiedSuccess: '✅ Code copied to clipboard',
                 types: {
                     multipleChoice: 'Multiple choice',
                     multipleResponse: 'Multiple response',
@@ -770,109 +866,16 @@
                 essayText: 'Student must write an essay-type answer',
                 essayManual: 'This question requires manual evaluation',
                 acceptedRange: 'Accepted range:',
-                placeholder: 'Paste your GIFT code here...\n\nExample:\n::Question 1::What is the capital of France?{\n=Paris #Correct!\n~London #Incorrect, that\'s the capital of England\n~Madrid #Incorrect, that\'s the capital of Spain\n}\n\n::Question 2::The earth is flat.{F}'
-            },
-            fr: {
-                mainTitle: '📚 Visualiseur GIFT de Moodle (avec support mlang)',
-                mainSubtitle: 'Visualisez vos questions au format GIFT, y compris le contenu multilingue (mlang).',
-                inputTitle: 'Entrez votre code GIFT',
-                parseBtn: '🔍 Visualiser les Questions',
-                exampleBtn: '📝 Charger l\'Exemple',
-                clearBtn: '🗑️ Effacer',
-                langLabel: '🌐 Langue:',
-                contentLangLabel: '🌍 Voir la question en langue :',
-                detectedLangsLabel: 'Langues détectées :',
-                footerCreated: 'Créé par',
-                emptyTitle: 'Aucune question à afficher',
-                emptyText: 'Entrez le code GIFT dans la zone de texte ci-dessus',
-                noQuestionsFound: 'Aucune question valide trouvée dans le code GIFT fourni.',
-                errorParsing: 'Erreur lors du traitement du code GIFT:',
-                questionsFound: 'Trouvé',
-                questions: 'question(s)',
-                summaryTitle: '📊 Résumé des Questions',
-                questionNumber: 'Question',
-                types: {
-                    multipleChoice: 'Choix multiple',
-                    multipleResponse: 'Réponse multiple',
-                    trueFalse: 'Vrai/Faux',
-                    shortAnswer: 'Réponse courte',
-                    matching: 'Appariement',
-                    numerical: 'Numérique',
-                    essay: 'Essai'
-                },
-                typeLabels: {
-                    multipleChoice: 'Choix multiple',
-                    multipleResponse: 'Réponse multiple',
-                    trueFalse: 'Vrai/Faux',
-                    shortAnswer: 'Réponse courte',
-                    matching: 'Appariement',
-                    numerical: 'Numérique',
-                    essay: 'Essai'
-                },
-                true: 'Vrai',
-                false: 'Faux',
-                shortAnswerExpected: 'Réponse texte courte attendue',
-                acceptedAnswers: 'Réponses correctes acceptées:',
-                essayText: 'L\'étudiant doit écrire une réponse de type essai',
-                essayManual: 'Cette question nécessite une évaluation manuelle',
-                acceptedRange: 'Plage acceptée:',
-                placeholder: 'Collez votre code GIFT ici...\n\nExemple:\n::Question 1::Quelle est la capitale de la France?{\n=Paris #Correct!\n~Londres #Incorrect, c\'est la capitale de l\'Angleterre\n~Madrid #Incorrect, c\'est la capitale de l\'Espagne\n}\n\n::Question 2::La terre est plate.{F}'
-            },
-            de: {
-                mainTitle: '📚 Moodle GIFT-Viewer (mit mlang-Unterstützung)',
-                mainSubtitle: 'Visualisieren Sie Ihre GIFT-Format-Fragen, einschließlich mehrsprachiger Inhalte (mlang).',
-                inputTitle: 'Geben Sie Ihren GIFT-Code ein',
-                parseBtn: '🔍 Fragen Visualisieren',
-                exampleBtn: '📝 Beispiel Laden',
-                clearBtn: '🗑️ Löschen',
-                langLabel: '🌐 Sprache:',
-                contentLangLabel: '🌍 Frage in Sprache anzeigen:',
-                detectedLangsLabel: 'Erkannte Sprachen:',
-                footerCreated: 'Erstellt von',
-                emptyTitle: 'Keine Fragen anzuzeigen',
-                emptyText: 'Geben Sie GIFT-Code im obigen Textbereich ein',
-                noQuestionsFound: 'Keine gültigen Fragen im bereitgestellten GIFT-Code gefunden.',
-                errorParsing: 'Fehler beim Verarbeiten des GIFT-Codes:',
-                questionsFound: 'Gefunden',
-                questions: 'Frage(n)',
-                summaryTitle: '📊 Fragen-Zusammenfassung',
-                questionNumber: 'Frage',
-                types: {
-                    multipleChoice: 'Multiple-Choice',
-                    multipleResponse: 'Mehrfachantwort',
-                    trueFalse: 'Wahr/Falsch',
-                    shortAnswer: 'Kurzantwort',
-                    matching: 'Zuordnung',
-                    numerical: 'Numerisch',
-                    essay: 'Aufsatz'
-                },
-                typeLabels: {
-                    multipleChoice: 'Multiple-Choice',
-                    multipleResponse: 'Mehrfachantwort',
-                    trueFalse: 'Wahr/Falsch',
-                    shortAnswer: 'Kurzantwort',
-                    matching: 'Zuordnung',
-                    numerical: 'Numerisch',
-                    essay: 'Aufsatz'
-                },
-                true: 'Wahr',
-                false: 'Falsch',
-                shortAnswerExpected: 'Kurze Textantwort erwartet',
-                acceptedAnswers: 'Akzeptierte richtige Antworten:',
-                essayText: 'Der Student muss eine aufsatzartige Antwort schreiben',
-                essayManual: 'Diese Frage erfordert eine manuelle Bewertung',
-                acceptedRange: 'Akzeptierter Bereich:',
-                placeholder: 'Fügen Sie hier Ihren GIFT-Code ein...\n\nBeispiel:\n::Frage 1::Was ist die Hauptstadt von Frankreich?{\n=Paris #Richtig!\n~London #Falsch, das ist die Hauptstadt von England\n~Madrid #Falsch, das ist die Hauptstadt von Spanien\n}\n\n::Frage 2::Die Erde ist flach.{F}'
+                placeholder: 'Paste your GIFT code here...'
             }
         };
 
         let currentLanguage = 'es';
-
-        // --- INICIO: Variables globales para mlang ---
         let originalParsedQuestions = [];
         let detectedContentLanguages = new Set();
         let selectedContentLanguage = null;
-        // --- FIN: Variables globales para mlang ---
+        let questionLanguageOverrides = {}; // Para almacenar idioma por pregunta
+        let editedQuestions = {}; // Para rastrear cambios por pregunta y idioma
 
         function detectBrowserLanguage() {
             const browserLang = navigator.language || navigator.userLanguage;
@@ -908,6 +911,9 @@
             document.getElementById('langLabel').textContent = t.langLabel;
             document.getElementById('giftInput').placeholder = t.placeholder;
             document.getElementById('contentLangLabel').textContent = t.contentLangLabel;
+            document.getElementById('exportTitle').textContent = t.exportTitle;
+            document.getElementById('copyBtn').textContent = t.copyBtn;
+            document.getElementById('downloadBtn').textContent = t.downloadBtn;
             
             const footerText = document.getElementById('footerCreated');
             footerText.innerHTML = `${t.footerCreated} <strong>José Luis Miralles Bono</strong>`;
@@ -919,10 +925,18 @@
             }
         }
         
-        // --- INICIO: Nuevas funciones para mlang ---
-
         function handleContentLanguageChange() {
             selectedContentLanguage = document.getElementById('contentLanguageSelect').value;
+            filterAndDisplayQuestions();
+        }
+
+        function setQuestionLanguage(questionIndex, lang) {
+            questionLanguageOverrides[questionIndex] = lang;
+            filterAndDisplayQuestions();
+        }
+
+        function resetQuestionLanguage(questionIndex) {
+            delete questionLanguageOverrides[questionIndex];
             filterAndDisplayQuestions();
         }
 
@@ -955,29 +969,30 @@
                 return;
             }
 
-            if (!selectedContentLanguage || detectedContentLanguages.size === 0) {
-                displayQuestions(originalParsedQuestions);
-                return;
-            }
-
             const filteredQuestions = JSON.parse(JSON.stringify(originalParsedQuestions));
 
-            filteredQuestions.forEach(question => {
-                question.title = processMlangText(question.title, selectedContentLanguage);
-                question.text = processMlangText(question.text, selectedContentLanguage);
+            filteredQuestions.forEach((question, idx) => {
+                const questionLang = questionLanguageOverrides[idx] || selectedContentLanguage;
+                
+                if (!questionLang || detectedContentLanguages.size === 0) {
+                    return;
+                }
+
+                question.title = processMlangText(question.title, questionLang);
+                question.text = processMlangText(question.text, questionLang);
 
                 if (question.answers) {
                     question.answers.forEach(answer => {
-                        answer.text = processMlangText(answer.text, selectedContentLanguage);
+                        answer.text = processMlangText(answer.text, questionLang);
                         if (answer.feedback) {
-                            answer.feedback = processMlangText(answer.feedback, selectedContentLanguage);
+                            answer.feedback = processMlangText(answer.feedback, questionLang);
                         }
                     });
                 }
                 if (question.pairs) {
                     question.pairs.forEach(pair => {
-                        pair.question = processMlangText(pair.question, selectedContentLanguage);
-                        pair.answer = processMlangText(pair.answer, selectedContentLanguage);
+                        pair.question = processMlangText(pair.question, questionLang);
+                        pair.answer = processMlangText(pair.answer, questionLang);
                     });
                 }
             });
@@ -1013,8 +1028,231 @@
                 container.style.display = 'none';
             }
         }
-        
-        // --- FIN: Nuevas funciones para mlang ---
+
+        function startEdit(questionIndex, section, subIndex = null) {
+            const editId = `edit-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
+            const contentId = `content-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
+            
+            const contentEl = document.getElementById(contentId);
+            const editEl = document.getElementById(editId);
+            
+            if (!contentEl || !editEl) return;
+            
+            contentEl.style.display = 'none';
+            editEl.style.display = 'block';
+            
+            const textarea = editEl.querySelector('textarea');
+            if (textarea) {
+                textarea.focus();
+            }
+        }
+
+        function cancelEdit(questionIndex, section, subIndex = null) {
+            const editId = `edit-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
+            const contentId = `content-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
+            
+            const contentEl = document.getElementById(contentId);
+            const editEl = document.getElementById(editId);
+            
+            if (!contentEl || !editEl) return;
+            
+            contentEl.style.display = 'block';
+            editEl.style.display = 'none';
+        }
+
+        function saveEdit(questionIndex, section, subIndex = null) {
+            const editId = `edit-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
+            const editEl = document.getElementById(editId);
+            const textarea = editEl.querySelector('textarea');
+            const newValue = textarea.value;
+            
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+            
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            
+            editedQuestions[questionIndex].langs.add(currentLang);
+            
+            if (!editedQuestions[questionIndex].edits[currentLang]) {
+                editedQuestions[questionIndex].edits[currentLang] = {};
+            }
+            
+            if (section === 'title') {
+                originalParsedQuestions[questionIndex].title = updateMlangText(
+                    originalParsedQuestions[questionIndex].title,
+                    currentLang,
+                    newValue
+                );
+                editedQuestions[questionIndex].edits[currentLang].title = newValue;
+            } else if (section === 'text') {
+                originalParsedQuestions[questionIndex].text = updateMlangText(
+                    originalParsedQuestions[questionIndex].text,
+                    currentLang,
+                    newValue
+                );
+                editedQuestions[questionIndex].edits[currentLang].text = newValue;
+            } else if (section === 'answer' && subIndex !== null) {
+                originalParsedQuestions[questionIndex].answers[subIndex].text = updateMlangText(
+                    originalParsedQuestions[questionIndex].answers[subIndex].text,
+                    currentLang,
+                    newValue
+                );
+                if (!editedQuestions[questionIndex].edits[currentLang].answers) {
+                    editedQuestions[questionIndex].edits[currentLang].answers = {};
+                }
+                editedQuestions[questionIndex].edits[currentLang].answers[subIndex] = newValue;
+            } else if (section === 'feedback' && subIndex !== null) {
+                originalParsedQuestions[questionIndex].answers[subIndex].feedback = updateMlangText(
+                    originalParsedQuestions[questionIndex].answers[subIndex].feedback || '',
+                    currentLang,
+                    newValue
+                );
+                if (!editedQuestions[questionIndex].edits[currentLang].feedbacks) {
+                    editedQuestions[questionIndex].edits[currentLang].feedbacks = {};
+                }
+                editedQuestions[questionIndex].edits[currentLang].feedbacks[subIndex] = newValue;
+            }
+            
+            cancelEdit(questionIndex, section, subIndex);
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
+        function updateMlangText(originalText, targetLang, newText) {
+            if (!originalText || typeof originalText !== 'string') {
+                return `\\{mlang ${targetLang}\\}${newText}\\{mlang\\}`;
+            }
+            
+            const fullBlockRegex = /(?:\\\{mlang [a-zA-Z_\-]+\s*\\\}.*?\\\{mlang\\\})+/gs;
+            const hasMLang = fullBlockRegex.test(originalText);
+            
+            if (!hasMLang) {
+                return `\\{mlang ${targetLang}\\}${newText}\\{mlang\\}`;
+            }
+            
+            let updated = false;
+            const result = originalText.replace(fullBlockRegex, (fullBlock) => {
+                const langSpecificRegex = /\\\{mlang ([a-zA-Z_\-]+)\s*\\\}(.*?)\\\{mlang\\\}/gs;
+                const langs = {};
+                let match;
+                while ((match = langSpecificRegex.exec(fullBlock)) !== null) {
+                    langs[match[1]] = match[2];
+                }
+                
+                langs[targetLang] = newText;
+                updated = true;
+                
+                let rebuilt = '';
+                for (const [lang, text] of Object.entries(langs)) {
+                    rebuilt += `\\{mlang ${lang}\\}${text}\\{mlang\\}`;
+                }
+                return rebuilt;
+            });
+            
+            if (!updated) {
+                return originalText + `\\{mlang ${targetLang}\\}${newText}\\{mlang\\}`;
+            }
+            
+            return result;
+        }
+
+        function generateGIFTCode() {
+            let giftCode = '';
+            
+            originalParsedQuestions.forEach((question, idx) => {
+                giftCode += `::${question.title}::${question.text}`;
+                
+                if (question.type === 'trueFalse') {
+                    giftCode += `{${question.correctAnswer ? 'T' : 'F'}}`;
+                } else if (question.type === 'essay') {
+                    giftCode += `{}`;
+                } else if (question.type === 'multipleChoice' || question.type === 'multipleResponse') {
+                    giftCode += '{\n';
+                    question.answers.forEach(answer => {
+                        const prefix = answer.weight === 100 ? '=' : (answer.weight > 0 ? `~%${answer.weight}%` : '~');
+                        giftCode += `${prefix}${answer.text}`;
+                        if (answer.feedback) {
+                            giftCode += `#${answer.feedback}`;
+                        }
+                        giftCode += '\n';
+                    });
+                    giftCode += '}';
+                } else if (question.type === 'shortAnswer') {
+                    giftCode += '{\n';
+                    question.answers.forEach(answer => {
+                        giftCode += `=${answer.text}`;
+                        if (answer.feedback) {
+                            giftCode += `#${answer.feedback}`;
+                        }
+                        giftCode += '\n';
+                    });
+                    giftCode += '}';
+                } else if (question.type === 'matching') {
+                    giftCode += '{\n';
+                    question.pairs.forEach(pair => {
+                        giftCode += `=${pair.question} -> ${pair.answer}\n`;
+                    });
+                    giftCode += '}';
+                } else if (question.type === 'numerical') {
+                    giftCode += '{#\n';
+                    question.answers.forEach(answer => {
+                        const weight = answer.weight !== 100 ? `%${answer.weight}%` : '';
+                        giftCode += `=${weight}${answer.value}${answer.margin > 0 ? ':' + answer.margin : ''}`;
+                        if (answer.feedback) {
+                            giftCode += `#${answer.feedback}`;
+                        }
+                        giftCode += '\n';
+                    });
+                    giftCode += '}';
+                }
+                
+                giftCode += '\n\n';
+            });
+            
+            return giftCode;
+        }
+
+        function updateExportSection() {
+            const hasEdits = Object.keys(editedQuestions).length > 0;
+            const exportSection = document.getElementById('exportSection');
+            
+            if (hasEdits) {
+                exportSection.classList.add('visible');
+                const giftCode = generateGIFTCode();
+                document.getElementById('giftCodePreview').textContent = giftCode;
+            } else {
+                exportSection.classList.remove('visible');
+            }
+        }
+
+        function copyGiftCode() {
+            const giftCode = document.getElementById('giftCodePreview').textContent;
+            navigator.clipboard.writeText(giftCode).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.textContent;
+                btn.textContent = translations[currentLanguage].copiedSuccess;
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        function downloadGiftFile() {
+            const giftCode = document.getElementById('giftCodePreview').textContent;
+            const blob = new Blob([giftCode], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'preguntas_editadas.gift';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
         function parseGIFT() {
             const input = document.getElementById('giftInput').value;
@@ -1024,6 +1262,9 @@
             originalParsedQuestions = [];
             detectedContentLanguages.clear();
             selectedContentLanguage = null;
+            questionLanguageOverrides = {};
+            editedQuestions = {};
+            document.getElementById('exportSection').classList.remove('visible');
 
             if (!input.trim()) {
                 output.innerHTML = `
@@ -1343,39 +1584,6 @@
                         
                         answers.push({ value, margin, weight, feedback });
                     }
-                } else {
-                    const numMatch = line.match(/^(-?\d+\.?\d*)/);
-                    if (numMatch) {
-                        value = parseFloat(numMatch[1]);
-                        line = line.substring(numMatch[0].length);
-                        
-                        if (line.startsWith(':')) {
-                            const marginMatch = line.substring(1).match(/^(-?\d+\.?\d*)/);
-                            if (marginMatch) {
-                                margin = parseFloat(marginMatch[1]);
-                            }
-                        }
-                        
-                        answers.push({ value, margin, weight: 100, feedback: '' });
-                    }
-                }
-            }
-            
-            if (answers.length === 0) {
-                const simpleMatch = answersBlock.match(/(-?\d+\.?\d*)/);
-                if (simpleMatch) {
-                    const value = parseFloat(simpleMatch[1]);
-                    const colonIndex = answersBlock.indexOf(':');
-                    let margin = 0;
-                    
-                    if (colonIndex > -1) {
-                        const marginMatch = answersBlock.substring(colonIndex + 1).match(/(-?\d+\.?\d*)/);
-                        if (marginMatch) {
-                            margin = parseFloat(marginMatch[1]);
-                        }
-                    }
-                    
-                    answers.push({ value, margin, weight: 100, feedback: '' });
                 }
             }
             
@@ -1418,16 +1626,98 @@
             html += '<div class="questions-container">';
             
             questions.forEach((question, index) => {
+                const isEdited = editedQuestions[index];
+                const questionLang = questionLanguageOverrides[index] || selectedContentLanguage;
+                
                 html += `
-                    <div class="question-card">
+                    <div class="question-card ${isEdited ? 'edited' : ''}">
                         <div class="question-header">
                             <div class="question-number">${t.questionNumber} ${index + 1}</div>
                             <div class="question-title">${escapeHtml(question.title)}</div>
                             <span class="question-type-badge">${t.typeLabels[question.type]}</span>
+                `;
+                
+                // Controles de idioma y edición
+                if (detectedContentLanguages.size > 0) {
+                    html += `
+                        <div class="question-controls">
+                            <div class="question-lang-selector">
+                                <label>${t.viewInLang}</label>
+                                <select onchange="setQuestionLanguage(${index}, this.value)">
+                    `;
+                    
+                    Array.from(detectedContentLanguages).sort().forEach(lang => {
+                        const selected = lang === questionLang ? 'selected' : '';
+                        html += `<option value="${lang}" ${selected}>${lang.toUpperCase()}</option>`;
+                    });
+                    
+                    html += `
+                                </select>
+                            </div>
+                            ${questionLanguageOverrides[index] ? `<button class="small secondary" onclick="resetQuestionLanguage(${index})">${t.resetToGeneral}</button>` : ''}
+                        </div>
+                    `;
+                    
+                    // Indicador de idiomas editados
+                    if (isEdited) {
+                        const editedLangs = Array.from(isEdited.langs);
+                        const notEditedLangs = Array.from(detectedContentLanguages).filter(l => !editedLangs.includes(l));
+                        
+                        html += `<div class="edited-langs-indicator">`;
+                        html += `<strong style="font-size: 0.85em; margin-right: 5px;">${t.editedLanguages}</strong>`;
+                        editedLangs.forEach(lang => {
+                            html += `<span class="lang-badge edited">${lang}</span>`;
+                        });
+                        if (notEditedLangs.length > 0) {
+                            html += `<strong style="font-size: 0.85em; margin: 0 5px;">${t.notEditedLanguages}</strong>`;
+                            notEditedLangs.forEach(lang => {
+                                html += `<span class="lang-badge not-edited">${lang}</span>`;
+                            });
+                        }
+                        html += `</div>`;
+                    }
+                }
+                
+                html += `
                         </div>
                         <div class="question-body">
-                            <div class="question-text">${escapeHtml(question.text)}</div>
-                            ${renderAnswers(question)}
+                `;
+                
+                // Título editable
+                html += `
+                    <div class="editable-section">
+                        <div id="content-${index}-title">
+                            <strong>Título:</strong> ${escapeHtml(question.title)}
+                        </div>
+                        <div id="edit-${index}-title" class="edit-mode" style="display: none;">
+                            <textarea>${escapeHtml(question.title)}</textarea>
+                            <div class="edit-mode-buttons">
+                                <button class="small success" onclick="saveEdit(${index}, 'title')">${t.save}</button>
+                                <button class="small secondary" onclick="cancelEdit(${index}, 'title')">${t.cancel}</button>
+                            </div>
+                        </div>
+                        <button class="small edit-button" onclick="startEdit(${index}, 'title')">${t.edit}</button>
+                    </div>
+                `;
+                
+                // Texto de pregunta editable
+                html += `
+                    <div class="editable-section">
+                        <div id="content-${index}-text" class="question-text">${escapeHtml(question.text)}</div>
+                        <div id="edit-${index}-text" class="edit-mode" style="display: none;">
+                            <textarea>${escapeHtml(question.text)}</textarea>
+                            <div class="edit-mode-buttons">
+                                <button class="small success" onclick="saveEdit(${index}, 'text')">${t.save}</button>
+                                <button class="small secondary" onclick="cancelEdit(${index}, 'text')">${t.cancel}</button>
+                            </div>
+                        </div>
+                        <button class="small edit-button" onclick="startEdit(${index}, 'text')">${t.edit}</button>
+                    </div>
+                `;
+                
+                html += renderAnswers(question, index);
+                
+                html += `
                         </div>
                     </div>
                 `;
@@ -1437,11 +1727,11 @@
             output.innerHTML = html;
         }
 
-        function renderAnswers(question) {
+        function renderAnswers(question, questionIndex) {
             switch (question.type) {
                 case 'multipleChoice':
                 case 'multipleResponse':
-                    return renderMultipleChoice(question);
+                    return renderMultipleChoice(question, questionIndex);
                 case 'trueFalse':
                     return renderTrueFalse(question);
                 case 'shortAnswer':
@@ -1457,11 +1747,12 @@
             }
         }
 
-        function renderMultipleChoice(question) {
+        function renderMultipleChoice(question, questionIndex) {
+            const t = translations[currentLanguage];
             const isMultiple = question.type === 'multipleResponse';
             let html = '<ul class="answers-list">';
             
-            question.answers.forEach((answer, index) => {
+            question.answers.forEach((answer, answerIndex) => {
                 let className = '';
                 let icon = '';
                 
@@ -1479,12 +1770,42 @@
                 html += `
                     <li class="answer-item ${className}">
                         <div class="answer-marker ${isMultiple ? 'checkbox' : ''}">${icon}</div>
-                        <div class="answer-content">
-                            <div class="answer-text">
-                                ${escapeHtml(answer.text)}
-                                ${answer.weight !== 0 && answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                        <div class="answer-content" style="width: 100%;">
+                            <div class="editable-section">
+                                <div id="content-${questionIndex}-answer-${answerIndex}" class="answer-text">
+                                    ${escapeHtml(answer.text)}
+                                    ${answer.weight !== 0 && answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                                </div>
+                                <div id="edit-${questionIndex}-answer-${answerIndex}" class="edit-mode" style="display: none;">
+                                    <textarea>${escapeHtml(answer.text)}</textarea>
+                                    <div class="edit-mode-buttons">
+                                        <button class="small success" onclick="saveEdit(${questionIndex}, 'answer', ${answerIndex})">${t.save}</button>
+                                        <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'answer', ${answerIndex})">${t.cancel}</button>
+                                    </div>
+                                </div>
+                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})">${t.edit}</button>
                             </div>
-                            ${answer.feedback ? `<div class="answer-feedback">💬 ${escapeHtml(answer.feedback)}</div>` : ''}
+                `;
+                
+                if (answer.feedback) {
+                    html += `
+                        <div class="editable-section">
+                            <div id="content-${questionIndex}-feedback-${answerIndex}" class="answer-feedback">
+                                💬 ${escapeHtml(answer.feedback)}
+                            </div>
+                            <div id="edit-${questionIndex}-feedback-${answerIndex}" class="edit-mode" style="display: none;">
+                                <textarea>${escapeHtml(answer.feedback)}</textarea>
+                                <div class="edit-mode-buttons">
+                                    <button class="small success" onclick="saveEdit(${questionIndex}, 'feedback', ${answerIndex})">${t.save}</button>
+                                    <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'feedback', ${answerIndex})">${t.cancel}</button>
+                                </div>
+                            </div>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'feedback', ${answerIndex})">${t.edit}</button>
+                        </div>
+                    `;
+                }
+                
+                html += `
                         </div>
                     </li>
                 `;
@@ -1605,128 +1926,69 @@
         }
 
         function loadExample() {
-            const examples = {
-                es: `// Ejemplo con múltiples idiomas (mlang)
-::Pregunta Moodle con Mlang::\\{mlang es\\}¿Cuál es la capital de España?\\{mlang\\}\\{mlang en\\}What is the capital of Spain?\\{mlang\\}\\{mlang ca\\}Quina és la capital d'Espanya?\\{mlang\\} {
-=\\{mlang es\\}Madrid\\{mlang\\}\\{mlang en\\}Madrid\\{mlang\\}\\{mlang ca\\}Madrid\\{mlang\\}#\\{mlang es\\}¡Correcto!\\{mlang\\}\\{mlang en\\}Correct!\\{mlang\\}\\{mlang ca\\}Correcte!\\{mlang\\}
-~\\{mlang es\\}Barcelona\\{mlang\\}\\{mlang en\\}Barcelona\\{mlang\\}\\{mlang ca\\}Barcelona\\{mlang\\}
-~\\{mlang es\\}Lisboa\\{mlang\\}\\{mlang en\\}Lisbon\\{mlang\\}\\{mlang ca\\}Lisboa\\{mlang\\}
+    const example = `// Ejemplos completos de preguntas GIFT con mlang (es/en/ca)
+
+::Opción Múltiple Simple::\\{mlang es\\}¿Cuál es la capital de Francia?\\{mlang\\}\\{mlang en\\}What is the capital of France?\\{mlang\\}\\{mlang ca\\}Quina és la capital de França?\\{mlang\\}{
+=\\{mlang es\\}París\\{mlang\\}\\{mlang en\\}Paris\\{mlang\\}\\{mlang ca\\}París\\{mlang\\}#\\{mlang es\\}¡Correcto! París es la capital de Francia.\\{mlang\\}\\{mlang en\\}Correct! Paris is the capital of France.\\{mlang\\}\\{mlang ca\\}Correcte! París és la capital de França.\\{mlang\\}
+~\\{mlang es\\}Londres\\{mlang\\}\\{mlang en\\}London\\{mlang\\}\\{mlang ca\\}Londres\\{mlang\\}#\\{mlang es\\}Incorrecto. Londres es la capital del Reino Unido.\\{mlang\\}\\{mlang en\\}Incorrect. London is the capital of the UK.\\{mlang\\}\\{mlang ca\\}Incorrecte. Londres és la capital del Regne Unit.\\{mlang\\}
+~\\{mlang es\\}Madrid\\{mlang\\}\\{mlang en\\}Madrid\\{mlang\\}\\{mlang ca\\}Madrid\\{mlang\\}#\\{mlang es\\}Incorrecto. Madrid es la capital de España.\\{mlang\\}\\{mlang en\\}Incorrect. Madrid is the capital of Spain.\\{mlang\\}\\{mlang ca\\}Incorrecte. Madrid és la capital d'Espanya.\\{mlang\\}
+~\\{mlang es\\}Berlín\\{mlang\\}\\{mlang en\\}Berlin\\{mlang\\}\\{mlang ca\\}Berlín\\{mlang\\}#\\{mlang es\\}Incorrecto. Berlín es la capital de Alemania.\\{mlang\\}\\{mlang en\\}Incorrect. Berlin is the capital of Germany.\\{mlang\\}\\{mlang ca\\}Incorrecte. Berlín és la capital d'Alemanya.\\{mlang\\}
 }
 
-// Ejemplo completo de preguntas GIFT
+::Verdadero o Falso::\\{mlang es\\}La Tierra es plana.\\{mlang\\}\\{mlang en\\}The Earth is flat.\\{mlang\\}\\{mlang ca\\}La Terra és plana.\\{mlang\\}{F#\\{mlang es\\}Correcto. La Tierra es esférica.\\{mlang\\}\\{mlang en\\}Correct. The Earth is spherical.\\{mlang\\}\\{mlang ca\\}Correcte. La Terra és esfèrica.\\{mlang\\}}
 
-::Opción Múltiple Simple::¿Cuál es la capital de Francia?{
-=París #¡Correcto! París es la capital de Francia.
-~Londres #Incorrecto. Londres es la capital del Reino Unido.
-~Madrid #Incorrecto. Madrid es la capital de España.
-~Berlín #Incorrecto. Berlín es la capital de Alemania.
+::Respuesta Múltiple::\\{mlang es\\}¿Cuáles de los siguientes son lenguajes de programación?\\{mlang\\}\\{mlang en\\}Which of the following are programming languages?\\{mlang\\}\\{mlang ca\\}Quins dels següents són llenguatges de programació?\\{mlang\\}{
+~%50%\\{mlang es\\}Python\\{mlang\\}\\{mlang en\\}Python\\{mlang\\}\\{mlang ca\\}Python\\{mlang\\}#\\{mlang es\\}Correcto. Python es un lenguaje de programación.\\{mlang\\}\\{mlang en\\}Correct. Python is a programming language.\\{mlang\\}\\{mlang ca\\}Correcte. Python és un llenguatge de programació.\\{mlang\\}
+~%50%\\{mlang es\\}JavaScript\\{mlang\\}\\{mlang en\\}JavaScript\\{mlang\\}\\{mlang ca\\}JavaScript\\{mlang\\}#\\{mlang es\\}Correcto. JavaScript es un lenguaje de programación.\\{mlang\\}\\{mlang en\\}Correct. JavaScript is a programming language.\\{mlang\\}\\{mlang ca\\}Correcte. JavaScript és un llenguatge de programació.\\{mlang\\}
+~\\{mlang es\\}HTML\\{mlang\\}\\{mlang en\\}HTML\\{mlang\\}\\{mlang ca\\}HTML\\{mlang\\}#\\{mlang es\\}Incorrecto. HTML es un lenguaje de marcado.\\{mlang\\}\\{mlang en\\}Incorrect. HTML is a markup language.\\{mlang\\}\\{mlang ca\\}Incorrecte. HTML és un llenguatge de marcat.\\{mlang\\}
+~\\{mlang es\\}CSS\\{mlang\\}\\{mlang en\\}CSS\\{mlang\\}\\{mlang ca\\}CSS\\{mlang\\}#\\{mlang es\\}Incorrecto. CSS es un lenguaje de estilos.\\{mlang\\}\\{mlang en\\}Incorrect. CSS is a styling language.\\{mlang\\}\\{mlang ca\\}Incorrecte. CSS és un llenguatge d'estils.\\{mlang\\}
 }
 
-::Verdadero o Falso::La Tierra es plana.{F}
-
-::Respuesta Múltiple::¿Cuáles de los siguientes son lenguajes de programación? {
-~%50%Python #Correcto, Python es un lenguaje de programación.
-~%50%JavaScript #Correcto, JavaScript es un lenguaje de programación.
-~HTML #Incorrecto, HTML es un lenguaje de marcado, no de programación.
-~CSS #Incorrecto, CSS es un lenguaje de estilos, no de programación.
+::Respuesta Corta::\\{mlang es\\}¿Quién escribió Don Quijote de la Mancha?\\{mlang\\}\\{mlang en\\}Who wrote Don Quixote?\\{mlang\\}\\{mlang ca\\}Qui va escriure Don Quixot de la Manxa?\\{mlang\\}{
+=\\{mlang es\\}Miguel de Cervantes\\{mlang\\}\\{mlang en\\}Miguel de Cervantes\\{mlang\\}\\{mlang ca\\}Miquel de Cervantes\\{mlang\\}
+=\\{mlang es\\}Cervantes\\{mlang\\}\\{mlang en\\}Cervantes\\{mlang\\}\\{mlang ca\\}Cervantes\\{mlang\\}
+=\\{mlang es\\}Miguel Cervantes\\{mlang\\}\\{mlang en\\}Miguel Cervantes\\{mlang\\}\\{mlang ca\\}Miquel Cervantes\\{mlang\\}
 }
 
-::Respuesta Corta::¿Quién escribió Don Quijote de la Mancha?{
-=Miguel de Cervantes
-=Cervantes
-=Miguel Cervantes
+::Emparejamiento::\\{mlang es\\}Relaciona cada país con su capital.\\{mlang\\}\\{mlang en\\}Match each country with its capital.\\{mlang\\}\\{mlang ca\\}Relaciona cada país amb la seva capital.\\{mlang\\}{
+=\\{mlang es\\}España\\{mlang\\}\\{mlang en\\}Spain\\{mlang\\}\\{mlang ca\\}Espanya\\{mlang\\} -> \\{mlang es\\}Madrid\\{mlang\\}\\{mlang en\\}Madrid\\{mlang\\}\\{mlang ca\\}Madrid\\{mlang\\}
+=\\{mlang es\\}Francia\\{mlang\\}\\{mlang en\\}France\\{mlang\\}\\{mlang ca\\}França\\{mlang\\} -> \\{mlang es\\}París\\{mlang\\}\\{mlang en\\}Paris\\{mlang\\}\\{mlang ca\\}París\\{mlang\\}
+=\\{mlang es\\}Italia\\{mlang\\}\\{mlang en\\}Italy\\{mlang\\}\\{mlang ca\\}Itàlia\\{mlang\\} -> \\{mlang es\\}Roma\\{mlang\\}\\{mlang en\\}Rome\\{mlang\\}\\{mlang ca\\}Roma\\{mlang\\}
+=\\{mlang es\\}Alemania\\{mlang\\}\\{mlang en\\}Germany\\{mlang\\}\\{mlang ca\\}Alemanya\\{mlang\\} -> \\{mlang es\\}Berlín\\{mlang\\}\\{mlang en\\}Berlin\\{mlang\\}\\{mlang ca\\}Berlín\\{mlang\\}
 }
 
-::Emparejamiento::Relaciona cada país con su capital.{
-=España -> Madrid
-=Francia -> París
-=Italia -> Roma
-=Alemania -> Berlín
+::Pregunta Numérica::\\{mlang es\\}¿Cuál es el valor de pi con dos decimales?\\{mlang\\}\\{mlang en\\}What is the value of pi to two decimal places?\\{mlang\\}\\{mlang ca\\}Quin és el valor de pi amb dos decimals?\\{mlang\\}{#3.14:0.01#\\{mlang es\\}¡Correcto!\\{mlang\\}\\{mlang en\\}Correct!\\{mlang\\}\\{mlang ca\\}Correcte!\\{mlang\\}}
+
+::Pregunta Numérica con Crédito Parcial::\\{mlang es\\}¿En qué año se descubrió América?\\{mlang\\}\\{mlang en\\}In what year was America discovered?\\{mlang\\}\\{mlang ca\\}En quin any es va descobrir Amèrica?\\{mlang\\}{#
+=1492:0#\\{mlang es\\}¡Exacto! Cristóbal Colón llegó a América en 1492.\\{mlang\\}\\{mlang en\\}Exactly! Christopher Columbus reached America in 1492.\\{mlang\\}\\{mlang ca\\}Exacte! Cristòfor Colom va arribar a Amèrica el 1492.\\{mlang\\}
+=%50%1490:2#\\{mlang es\\}Casi correcto. Fue en 1492.\\{mlang\\}\\{mlang en\\}Close. It was 1492.\\{mlang\\}\\{mlang ca\\}Gairebé correcte. Va ser el 1492.\\{mlang\\}
 }
 
-::Pregunta Numérica::¿Cuál es el valor de pi con dos decimales? {#3.14:0.01}
+::Pregunta de Ensayo::\\{mlang es\\}Explica la importancia de la Revolución Francesa en la historia europea.\\{mlang\\}\\{mlang en\\}Explain the importance of the French Revolution in European history.\\{mlang\\}\\{mlang ca\\}Explica la importància de la Revolució Francesa en la història europea.\\{mlang\\}{}
 
-::Pregunta Numérica con Crédito Parcial::¿En qué año se descubrió América?{#
-=1492:0 #¡Exacto! Cristóbal Colón llegó a América en 1492.
-=%50%1490:2 #Casi correcto. Fue en 1492, tienes 50% de crédito por estar cerca.
+::Palabra Perdida::\\{mlang es\\}Isaac Newton es famoso por formular la ley de la\\{mlang\\}\\{mlang en\\}Isaac Newton is famous for formulating the law of\\{mlang\\}\\{mlang ca\\}Isaac Newton és famós per formular la llei de la\\{mlang\\} {
+=\\{mlang es\\}gravitación\\{mlang\\}\\{mlang en\\}gravitation\\{mlang\\}\\{mlang ca\\}gravitació\\{mlang\\}
+=\\{mlang es\\}gravedad\\{mlang\\}\\{mlang en\\}gravity\\{mlang\\}\\{mlang ca\\}gravetat\\{mlang\\}
+=\\{mlang es\\}gravitación universal\\{mlang\\}\\{mlang en\\}universal gravitation\\{mlang\\}\\{mlang ca\\}gravitació universal\\{mlang\\}
+}.`;
+
+    document.getElementById('giftInput').value = example;
+    parseGIFT();
 }
-
-::Pregunta de Ensayo::Explica la importancia de la Revolución Francesa en la historia europea.{}
-
-::Palabra Perdida::Isaac Newton es famoso por formular la ley de la {=gravitación =gravedad =gravitación universal}.`,
-                en: `// Example with multiple languages (mlang)
-::Moodle Mlang Question::\\{mlang es\\}¿Cuál es la capital de España?\\{mlang\\}\\{mlang en\\}What is the capital of Spain?\\{mlang\\}\\{mlang ca\\}Quina és la capital d'Espanya?\\{mlang\\} {
-=\\{mlang es\\}Madrid\\{mlang\\}\\{mlang en\\}Madrid\\{mlang\\}\\{mlang ca\\}Madrid\\{mlang\\}#\\{mlang es\\}¡Correcto!\\{mlang\\}\\{mlang en\\}Correct!\\{mlang\\}\\{mlang ca\\}Correcte!\\{mlang\\}
-~\\{mlang es\\}Barcelona\\{mlang\\}\\{mlang en\\}Barcelona\\{mlang\\}\\{mlang ca\\}Barcelona\\{mlang\\}
-~\\{mlang es\\}Lisboa\\{mlang\\}\\{mlang en\\}Lisbon\\{mlang\\}\\{mlang ca\\}Lisboa\\{mlang\\}
-}
-
-// Complete GIFT questions example
-
-::Simple Multiple Choice::What is the capital of France?{
-=Paris #Correct! Paris is the capital of France.
-~London #Incorrect. London is the capital of the UK.
-~Madrid #Incorrect. Madrid is the capital of Spain.
-~Berlin #Incorrect. Berlin is the capital of Germany.
-}
-
-::True or False::The Earth is flat.{F}
-
-::Multiple Response::Which of the following are programming languages? {
-~%50%Python #Correct, Python is a programming language.
-~%50%JavaScript #Correct, JavaScript is a programming language.
-~HTML #Incorrect, HTML is a markup language, not a programming language.
-~CSS #Incorrect, CSS is a styling language, not a programming language.
-}
-
-::Short Answer::Who wrote Don Quixote?{
-=Miguel de Cervantes
-=Cervantes
-=de Cervantes
-}
-
-::Matching::Match each country with its capital.{
-=Spain -> Madrid
-=France -> Paris
-=Italy -> Rome
-=Germany -> Berlin
-}
-
-::Numerical Question::What is the value of pi to two decimal places? {#3.14:0.01}
-
-::Numerical Question with Partial Credit::In what year was America discovered?{#
-=1492:0 #Exactly! Columbus reached America in 1492.
-=%50%1490:2 #Close. It was 1492, you get 50% credit for being close.
-}
-
-::Essay Question::Explain the importance of the French Revolution in European history.{}
-
-::Missing Word::Isaac Newton is famous for formulating the law of {=gravitation =gravity =universal gravitation}.`
-            };
-
-            const example = examples[currentLanguage] || examples['es'];
-            document.getElementById('giftInput').value = example;
-            parseGIFT();
-        }
-
         function clearAll() {
             document.getElementById('giftInput').value = '';
             document.getElementById('output').innerHTML = '';
             detectedContentLanguages.clear();
             updateContentLanguageSelector();
             document.getElementById('detectedLanguagesInfo').innerHTML = '';
+            questionLanguageOverrides = {};
+            editedQuestions = {};
+            document.getElementById('exportSection').classList.remove('visible');
         }
 
         window.addEventListener('load', () => {
             detectBrowserLanguage();
-            
-            const input = document.getElementById('giftInput').value;
-            if (input.trim()) {
-                parseGIFT();
-            }
         });
     </script>
 </body>
 </html>
-
-

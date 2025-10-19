@@ -1137,6 +1137,48 @@
             updateExportSection();
         }
 
+        function saveMultipleChoiceEdit(questionIndex, answerIndex) {
+            const textArea = document.getElementById(`answer-text-${questionIndex}-${answerIndex}`);
+            const weightInput = document.getElementById(`answer-weight-${questionIndex}-${answerIndex}`);
+
+            const newText = textArea.value;
+            const newWeight = parseInt(weightInput.value) || 0;
+
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+
+            // Actualizar texto
+            originalParsedQuestions[questionIndex].answers[answerIndex].text = updateMlangText(
+                originalParsedQuestions[questionIndex].answers[answerIndex].text,
+                currentLang,
+                newText
+            );
+
+            // Actualizar peso y propiedad correct
+            originalParsedQuestions[questionIndex].answers[answerIndex].weight = newWeight;
+            originalParsedQuestions[questionIndex].answers[answerIndex].correct = newWeight > 0;
+
+            // Marcar como editado
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            if (!editedQuestions[questionIndex].edits[currentLang]) {
+                editedQuestions[questionIndex].edits[currentLang] = {};
+            }
+            if (!editedQuestions[questionIndex].edits[currentLang].answers) {
+                editedQuestions[questionIndex].edits[currentLang].answers = {};
+            }
+            editedQuestions[questionIndex].edits[currentLang].answers[answerIndex] = newText;
+
+            cancelEdit(questionIndex, 'answer', answerIndex);
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
         function saveEdit(questionIndex, section, subIndex = null) {
             const editId = `edit-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
             const editEl = document.getElementById(editId);
@@ -1892,9 +1934,15 @@
                                     </span>
                                 </div>
                                 <div id="edit-${questionIndex}-answer-${answerIndex}" class="edit-mode" style="display: none;">
-                                    <textarea>${escapeHtml(answer.text)}</textarea>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Texto de la respuesta:</label>
+                                    <textarea id="answer-text-${questionIndex}-${answerIndex}">${escapeHtml(answer.text)}</textarea>
+                                    <label style="display: block; margin-top: 10px; margin-bottom: 5px; font-weight: 600;">Peso (%):</label>
+                                    <input type="number" min="-100" max="100" value="${answer.weight}" id="answer-weight-${questionIndex}-${answerIndex}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                    <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+                                        💡 100 = Correcta completa, 0 = Incorrecta, valores intermedios = Crédito parcial, negativos = Penalización
+                                    </div>
                                     <div class="edit-mode-buttons">
-                                        <button class="small success" onclick="saveEdit(${questionIndex}, 'answer', ${answerIndex})">${t.save}</button>
+                                        <button class="small success" onclick="saveMultipleChoiceEdit(${questionIndex}, ${answerIndex})">${t.save}</button>
                                         <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'answer', ${answerIndex})">${t.cancel}</button>
                                     </div>
                                 </div>

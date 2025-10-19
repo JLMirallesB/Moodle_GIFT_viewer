@@ -2060,7 +2060,7 @@
                 const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
 
                 if (question.wrongFeedback) {
-                    const wrongFeedbackText = extractMlangText(question.wrongFeedback, currentLang);
+                    const wrongFeedbackText = displayTextInLang(question.wrongFeedback, currentLang);
                     html += `
                         <div class="editable-section" style="margin-bottom: 10px;">
                             <div id="content-${questionIndex}-wrong-feedback">
@@ -2080,7 +2080,7 @@
                 }
 
                 if (question.correctFeedback) {
-                    const correctFeedbackText = extractMlangText(question.correctFeedback, currentLang);
+                    const correctFeedbackText = displayTextInLang(question.correctFeedback, currentLang);
                     html += `
                         <div class="editable-section">
                             <div id="content-${questionIndex}-correct-feedback">

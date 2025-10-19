@@ -1218,16 +1218,6 @@
                     editedQuestions[questionIndex].edits[currentLang].pairs[subIndex] = {};
                 }
                 editedQuestions[questionIndex].edits[currentLang].pairs[subIndex].answer = newValue;
-            } else if (section === 'numerical-feedback' && subIndex !== null) {
-                originalParsedQuestions[questionIndex].answers[subIndex].feedback = updateMlangText(
-                    originalParsedQuestions[questionIndex].answers[subIndex].feedback || '',
-                    currentLang,
-                    newValue
-                );
-                if (!editedQuestions[questionIndex].edits[currentLang].numericalFeedbacks) {
-                    editedQuestions[questionIndex].edits[currentLang].numericalFeedbacks = {};
-                }
-                editedQuestions[questionIndex].edits[currentLang].numericalFeedbacks[subIndex] = newValue;
             }
 
             cancelEdit(questionIndex, section, subIndex);
@@ -1646,61 +1636,70 @@
         function parseNumericalAnswers(answersBlock) {
             const answers = [];
             answersBlock = answersBlock.substring(1).trim();
-            
-            const lines = answersBlock.split(/(?=[=])/);
-            
-            for (let line of lines) {
-                line = line.trim();
-                if (!line) continue;
-                
-                let weight = 100;
-                let value = 0;
-                let margin = 0;
-                let feedback = '';
-                
-                if (line.startsWith('=')) {
-                    line = line.substring(1);
-                    
+
+            // Split by newlines and filter empty lines
+            const lines = answersBlock.split(/\n/).filter(l => l.trim());
+
+            // Si solo hay una línea, es formato simple
+            if (lines.length === 1) {
+                const answer = parseNumericalLine(lines[0], 100);
+                if (answer) answers.push(answer);
+            } else {
+                // Múltiples respuestas con pesos
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line || !line.startsWith('=')) continue;
+
+                    line = line.substring(1); // Quitar el =
+
+                    let weight = 100;
+                    // Extraer peso si existe
                     if (line.match(/^%(-?\d+)%/)) {
                         const match = line.match(/^%(-?\d+)%/);
                         weight = parseInt(match[1]);
                         line = line.substring(match[0].length);
                     }
-                    
-                    const numMatch = line.match(/^(-?\d+\.?\d*)/);
-                    if (numMatch) {
-                        value = parseFloat(numMatch[1]);
-                        line = line.substring(numMatch[0].length);
-                        
-                        if (line.startsWith(':')) {
-                            const marginMatch = line.substring(1).match(/^(-?\d+\.?\d*)/);
-                            if (marginMatch) {
-                                margin = parseFloat(marginMatch[1]);
-                                line = line.substring(marginMatch[0].length + 1);
-                            }
-                        }
-                        
-                        if (line.startsWith('..')) {
-                            const rangeMatch = line.substring(2).match(/^(-?\d+\.?\d*)/);
-                            if (rangeMatch) {
-                                const maxValue = parseFloat(rangeMatch[1]);
-                                margin = (maxValue - value) / 2;
-                                value = (value + maxValue) / 2;
-                                line = line.substring(rangeMatch[0].length + 2);
-                            }
-                        }
-                        
-                        if (line.includes('#')) {
-                            const parts = line.split('#');
-                            feedback = parts.slice(1).join('#').trim();
-                        }
-                        
-                        answers.push({ value, margin, weight, feedback });
-                    }
+
+                    const answer = parseNumericalLine(line, weight);
+                    if (answer) answers.push(answer);
                 }
             }
-            
+
             return answers;
+        }
+
+        function parseNumericalLine(line, weight) {
+            line = line.trim();
+            let value = 0;
+            let margin = 0;
+
+            // Formato de rango: MinValue..MaxValue
+            const rangeMatch = line.match(/^(-?\d+\.?\d*)\.\.(-?\d+\.?\d*)/);
+            if (rangeMatch) {
+                const minValue = parseFloat(rangeMatch[1]);
+                const maxValue = parseFloat(rangeMatch[2]);
+                value = (minValue + maxValue) / 2;
+                margin = (maxValue - minValue) / 2;
+                return { value, margin, weight };
+            }
+
+            // Formato con margen: Value:Margin
+            const valueMarginMatch = line.match(/^(-?\d+\.?\d*):(-?\d+\.?\d*)/);
+            if (valueMarginMatch) {
+                value = parseFloat(valueMarginMatch[1]);
+                margin = parseFloat(valueMarginMatch[2]);
+                return { value, margin, weight };
+            }
+
+            // Formato simple: solo Value
+            const simpleMatch = line.match(/^(-?\d+\.?\d*)/);
+            if (simpleMatch) {
+                value = parseFloat(simpleMatch[1]);
+                margin = 0;
+                return { value, margin, weight };
+            }
+
+            return null;
         }
 
         function displayQuestions(questions) {
@@ -2091,21 +2090,6 @@
                             </div>
                             <button class="small edit-button" onclick="startEdit(${questionIndex}, 'numerical', ${answerIndex})" style="position: absolute; top: 5px; right: 5px; opacity: 1;">${t.edit}</button>
                         </div>
-                        ${answer.feedback ? `
-                            <div class="editable-section" style="margin-top: 10px;">
-                                <div id="content-${questionIndex}-numerical-feedback-${answerIndex}" class="answer-feedback">
-                                    💬 ${escapeHtml(answer.feedback)}
-                                </div>
-                                <div id="edit-${questionIndex}-numerical-feedback-${answerIndex}" class="edit-mode" style="display: none;">
-                                    <textarea>${escapeHtml(answer.feedback)}</textarea>
-                                    <div class="edit-mode-buttons">
-                                        <button class="small success" onclick="saveEdit(${questionIndex}, 'numerical-feedback', ${answerIndex})">${t.save}</button>
-                                        <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'numerical-feedback', ${answerIndex})">${t.cancel}</button>
-                                    </div>
-                                </div>
-                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'numerical-feedback', ${answerIndex})">${t.edit}</button>
-                            </div>
-                        ` : ''}
                     </div>
                 `;
             });
@@ -2163,11 +2147,13 @@
 =\\{mlang es\\}Alemania\\{mlang\\}\\{mlang en\\}Germany\\{mlang\\}\\{mlang ca\\}Alemanya\\{mlang\\} -> \\{mlang es\\}Berlín\\{mlang\\}\\{mlang en\\}Berlin\\{mlang\\}\\{mlang ca\\}Berlín\\{mlang\\}
 }
 
-::Pregunta Numérica::\\{mlang es\\}¿Cuál es el valor de pi con dos decimales?\\{mlang\\}\\{mlang en\\}What is the value of pi to two decimal places?\\{mlang\\}\\{mlang ca\\}Quin és el valor de pi amb dos decimals?\\{mlang\\}{#3.14:0.01#\\{mlang es\\}¡Correcto!\\{mlang\\}\\{mlang en\\}Correct!\\{mlang\\}\\{mlang ca\\}Correcte!\\{mlang\\}}
+::Pregunta Numérica Simple::\\{mlang es\\}¿Cuál es el valor de pi con tres decimales?\\{mlang\\}\\{mlang en\\}What is the value of pi to three decimal places?\\{mlang\\}\\{mlang ca\\}Quin és el valor de pi amb tres decimals?\\{mlang\\}{#3.14159:0.0005}
+
+::Pregunta Numérica con Rango::\\{mlang es\\}¿Cuándo nació Ulysses S. Grant (rango de 5 años)?\\{mlang\\}\\{mlang en\\}When was Ulysses S. Grant born (5 year range)?\\{mlang\\}\\{mlang ca\\}Quan va néixer Ulysses S. Grant (rang de 5 anys)?\\{mlang\\}{#1822:5}
 
 ::Pregunta Numérica con Crédito Parcial::\\{mlang es\\}¿En qué año se descubrió América?\\{mlang\\}\\{mlang en\\}In what year was America discovered?\\{mlang\\}\\{mlang ca\\}En quin any es va descobrir Amèrica?\\{mlang\\}{#
-=1492:0#\\{mlang es\\}¡Exacto! Cristóbal Colón llegó a América en 1492.\\{mlang\\}\\{mlang en\\}Exactly! Christopher Columbus reached America in 1492.\\{mlang\\}\\{mlang ca\\}Exacte! Cristòfor Colom va arribar a Amèrica el 1492.\\{mlang\\}
-=%50%1490:2#\\{mlang es\\}Casi correcto. Fue en 1492.\\{mlang\\}\\{mlang en\\}Close. It was 1492.\\{mlang\\}\\{mlang ca\\}Gairebé correcte. Va ser el 1492.\\{mlang\\}
+=1492:0
+=%50%1822:2
 }
 
 ::Pregunta de Ensayo::\\{mlang es\\}Explica la importancia de la Revolución Francesa en la historia europea.\\{mlang\\}\\{mlang en\\}Explain the importance of the French Revolution in European history.\\{mlang\\}\\{mlang ca\\}Explica la importància de la Revolució Francesa en la història europea.\\{mlang\\}{}

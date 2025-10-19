@@ -723,6 +723,8 @@
                 edit: '✏️ Editar',
                 save: '💾 Guardar',
                 cancel: '❌ Cancelar',
+                delete: '🗑️ Borrar',
+                addAnswer: '➕ Añadir respuesta',
                 exportTitle: '📤 Exportar Código GIFT Editado',
                 copyBtn: '📋 Copiar Código',
                 downloadBtn: '💾 Descargar Archivo',
@@ -780,6 +782,8 @@
                 edit: '✏️ Editar',
                 save: '💾 Guardar',
                 cancel: '❌ Cancel·lar',
+                delete: '🗑️ Esborrar',
+                addAnswer: '➕ Afegir resposta',
                 exportTitle: '📤 Exportar Codi GIFT Editat',
                 copyBtn: '📋 Copiar Codi',
                 downloadBtn: '💾 Descarregar Fitxer',
@@ -837,6 +841,8 @@
                 edit: '✏️ Edit',
                 save: '💾 Save',
                 cancel: '❌ Cancel',
+                delete: '🗑️ Delete',
+                addAnswer: '➕ Add answer',
                 exportTitle: '📤 Export Edited GIFT Code',
                 copyBtn: '📋 Copy Code',
                 downloadBtn: '💾 Download File',
@@ -1058,6 +1064,77 @@
             
             contentEl.style.display = 'block';
             editEl.style.display = 'none';
+        }
+
+        function deleteShortAnswer(questionIndex, answerIndex) {
+            const t = translations[currentLanguage];
+            if (!confirm(`¿Estás seguro de que quieres borrar esta respuesta?`)) {
+                return;
+            }
+
+            originalParsedQuestions[questionIndex].answers.splice(answerIndex, 1);
+
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
+        function addShortAnswer(questionIndex) {
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+
+            const newAnswer = {
+                text: currentLang !== 'default' ? `\\{mlang ${currentLang}\\}Nueva respuesta\\{mlang\\}` : 'Nueva respuesta',
+                weight: 100,
+                feedback: ''
+            };
+
+            originalParsedQuestions[questionIndex].answers.push(newAnswer);
+
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
+        function saveNumericalEdit(questionIndex, answerIndex) {
+            const valueInput = document.getElementById(`numerical-value-${questionIndex}-${answerIndex}`);
+            const marginInput = document.getElementById(`numerical-margin-${questionIndex}-${answerIndex}`);
+            const weightInput = document.getElementById(`numerical-weight-${questionIndex}-${answerIndex}`);
+
+            const newValue = parseFloat(valueInput.value) || 0;
+            const newMargin = parseFloat(marginInput.value) || 0;
+            const newWeight = parseInt(weightInput.value) || 100;
+
+            originalParsedQuestions[questionIndex].answers[answerIndex].value = newValue;
+            originalParsedQuestions[questionIndex].answers[answerIndex].margin = newMargin;
+            originalParsedQuestions[questionIndex].answers[answerIndex].weight = newWeight;
+
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            cancelEdit(questionIndex, 'numerical', answerIndex);
+            filterAndDisplayQuestions();
+            updateExportSection();
         }
 
         function saveEdit(questionIndex, section, subIndex = null) {
@@ -1559,61 +1636,70 @@
         function parseNumericalAnswers(answersBlock) {
             const answers = [];
             answersBlock = answersBlock.substring(1).trim();
-            
-            const lines = answersBlock.split(/(?=[=])/);
-            
-            for (let line of lines) {
-                line = line.trim();
-                if (!line) continue;
-                
-                let weight = 100;
-                let value = 0;
-                let margin = 0;
-                let feedback = '';
-                
-                if (line.startsWith('=')) {
-                    line = line.substring(1);
-                    
+
+            // Split by newlines and filter empty lines
+            const lines = answersBlock.split(/\n/).filter(l => l.trim());
+
+            // Si solo hay una línea, es formato simple
+            if (lines.length === 1) {
+                const answer = parseNumericalLine(lines[0], 100);
+                if (answer) answers.push(answer);
+            } else {
+                // Múltiples respuestas con pesos
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line || !line.startsWith('=')) continue;
+
+                    line = line.substring(1); // Quitar el =
+
+                    let weight = 100;
+                    // Extraer peso si existe
                     if (line.match(/^%(-?\d+)%/)) {
                         const match = line.match(/^%(-?\d+)%/);
                         weight = parseInt(match[1]);
                         line = line.substring(match[0].length);
                     }
-                    
-                    const numMatch = line.match(/^(-?\d+\.?\d*)/);
-                    if (numMatch) {
-                        value = parseFloat(numMatch[1]);
-                        line = line.substring(numMatch[0].length);
-                        
-                        if (line.startsWith(':')) {
-                            const marginMatch = line.substring(1).match(/^(-?\d+\.?\d*)/);
-                            if (marginMatch) {
-                                margin = parseFloat(marginMatch[1]);
-                                line = line.substring(marginMatch[0].length + 1);
-                            }
-                        }
-                        
-                        if (line.startsWith('..')) {
-                            const rangeMatch = line.substring(2).match(/^(-?\d+\.?\d*)/);
-                            if (rangeMatch) {
-                                const maxValue = parseFloat(rangeMatch[1]);
-                                margin = (maxValue - value) / 2;
-                                value = (value + maxValue) / 2;
-                                line = line.substring(rangeMatch[0].length + 2);
-                            }
-                        }
-                        
-                        if (line.includes('#')) {
-                            const parts = line.split('#');
-                            feedback = parts.slice(1).join('#').trim();
-                        }
-                        
-                        answers.push({ value, margin, weight, feedback });
-                    }
+
+                    const answer = parseNumericalLine(line, weight);
+                    if (answer) answers.push(answer);
                 }
             }
-            
+
             return answers;
+        }
+
+        function parseNumericalLine(line, weight) {
+            line = line.trim();
+            let value = 0;
+            let margin = 0;
+
+            // Formato de rango: MinValue..MaxValue
+            const rangeMatch = line.match(/^(-?\d+\.?\d*)\.\.(-?\d+\.?\d*)/);
+            if (rangeMatch) {
+                const minValue = parseFloat(rangeMatch[1]);
+                const maxValue = parseFloat(rangeMatch[2]);
+                value = (minValue + maxValue) / 2;
+                margin = (maxValue - minValue) / 2;
+                return { value, margin, weight };
+            }
+
+            // Formato con margen: Value:Margin
+            const valueMarginMatch = line.match(/^(-?\d+\.?\d*):(-?\d+\.?\d*)/);
+            if (valueMarginMatch) {
+                value = parseFloat(valueMarginMatch[1]);
+                margin = parseFloat(valueMarginMatch[2]);
+                return { value, margin, weight };
+            }
+
+            // Formato simple: solo Value
+            const simpleMatch = line.match(/^(-?\d+\.?\d*)/);
+            if (simpleMatch) {
+                value = parseFloat(simpleMatch[1]);
+                margin = 0;
+                return { value, margin, weight };
+            }
+
+            return null;
         }
 
         function displayQuestions(questions) {
@@ -1765,7 +1851,7 @@
                 case 'matching':
                     return renderMatching(question, questionIndex);
                 case 'numerical':
-                    return renderNumerical(question);
+                    return renderNumerical(question, questionIndex);
                 case 'essay':
                     return renderEssay(question);
                 default:
@@ -1875,14 +1961,17 @@
         function renderShortAnswer(question, questionIndex) {
             const t = translations[currentLanguage];
             let html = `<div class="input-box">${t.shortAnswerExpected}</div>`;
-            html += `<div style="margin-top: 15px;"><strong>${t.acceptedAnswers}</strong></div>`;
+            html += `<div style="margin-top: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">`;
+            html += `<strong>${t.acceptedAnswers}</strong>`;
+            html += `<button class="small success" onclick="addShortAnswer(${questionIndex})" style="opacity: 1;">${t.addAnswer}</button>`;
+            html += `</div>`;
             html += '<ul class="answers-list">';
 
             question.answers.forEach((answer, answerIndex) => {
                 const className = answer.weight === 100 ? 'correct' : 'partial';
 
                 html += `
-                    <li class="answer-item ${className}">
+                    <li class="answer-item ${className}" style="position: relative;">
                         <div class="answer-marker">✓</div>
                         <div class="answer-content" style="width: 100%;">
                             <div class="editable-section">
@@ -1897,7 +1986,10 @@
                                         <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'answer', ${answerIndex})">${t.cancel}</button>
                                     </div>
                                 </div>
-                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})">${t.edit}</button>
+                                <div style="display: flex; gap: 5px; position: absolute; top: 5px; right: 5px;">
+                                    <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})" style="opacity: 1; position: static;">${t.edit}</button>
+                                    ${question.answers.length > 1 ? `<button class="small secondary" onclick="deleteShortAnswer(${questionIndex}, ${answerIndex})" style="opacity: 1; position: static; background: #dc3545;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">${t.delete}</button>` : ''}
+                                </div>
                             </div>
                             ${answer.feedback ? `
                                 <div class="editable-section">
@@ -1969,23 +2061,39 @@
             return html;
         }
 
-        function renderNumerical(question) {
+        function renderNumerical(question, questionIndex) {
             const t = translations[currentLanguage];
             let html = '<div>';
-            
-            question.answers.forEach(answer => {
+
+            question.answers.forEach((answer, answerIndex) => {
                 html += `
-                    <div class="numerical-answer" style="background: ${answer.weight === 100 ? '#d4edda' : '#fff3cd'}; border-color: ${answer.weight === 100 ? '#28a745' : '#ffc107'}; margin-bottom: 10px;">
-                        <div class="numerical-value">
-                            ${answer.value}${answer.margin > 0 ? ` ± ${answer.margin}` : ''}
-                            ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                    <div class="numerical-answer" style="background: ${answer.weight === 100 ? '#d4edda' : '#fff3cd'}; border-color: ${answer.weight === 100 ? '#28a745' : '#ffc107'}; margin-bottom: 10px; position: relative;">
+                        <div class="editable-section">
+                            <div id="content-${questionIndex}-numerical-${answerIndex}">
+                                <div class="numerical-value">
+                                    ${answer.value}${answer.margin > 0 ? ` ± ${answer.margin}` : ''}
+                                    ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                                </div>
+                                ${answer.margin > 0 ? `<div class="numerical-details">${t.acceptedRange} ${answer.value - answer.margin} a ${answer.value + answer.margin}</div>` : ''}
+                            </div>
+                            <div id="edit-${questionIndex}-numerical-${answerIndex}" class="edit-mode" style="display: none;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Valor:</label>
+                                <input type="number" step="any" value="${answer.value}" id="numerical-value-${questionIndex}-${answerIndex}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Margen de error:</label>
+                                <input type="number" step="any" value="${answer.margin}" id="numerical-margin-${questionIndex}-${answerIndex}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Peso (%):</label>
+                                <input type="number" min="0" max="100" value="${answer.weight}" id="numerical-weight-${questionIndex}-${answerIndex}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                <div class="edit-mode-buttons">
+                                    <button class="small success" onclick="saveNumericalEdit(${questionIndex}, ${answerIndex})">${t.save}</button>
+                                    <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'numerical', ${answerIndex})">${t.cancel}</button>
+                                </div>
+                            </div>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'numerical', ${answerIndex})" style="position: absolute; top: 5px; right: 5px; opacity: 1;">${t.edit}</button>
                         </div>
-                        ${answer.margin > 0 ? `<div class="numerical-details">${t.acceptedRange} ${answer.value - answer.margin} a ${answer.value + answer.margin}</div>` : ''}
-                        ${answer.feedback ? `<div class="answer-feedback">💬 ${escapeHtml(answer.feedback)}</div>` : ''}
                     </div>
                 `;
             });
-            
+
             html += '</div>';
             return html;
         }
@@ -2039,11 +2147,13 @@
 =\\{mlang es\\}Alemania\\{mlang\\}\\{mlang en\\}Germany\\{mlang\\}\\{mlang ca\\}Alemanya\\{mlang\\} -> \\{mlang es\\}Berlín\\{mlang\\}\\{mlang en\\}Berlin\\{mlang\\}\\{mlang ca\\}Berlín\\{mlang\\}
 }
 
-::Pregunta Numérica::\\{mlang es\\}¿Cuál es el valor de pi con dos decimales?\\{mlang\\}\\{mlang en\\}What is the value of pi to two decimal places?\\{mlang\\}\\{mlang ca\\}Quin és el valor de pi amb dos decimals?\\{mlang\\}{#3.14:0.01#\\{mlang es\\}¡Correcto!\\{mlang\\}\\{mlang en\\}Correct!\\{mlang\\}\\{mlang ca\\}Correcte!\\{mlang\\}}
+::Pregunta Numérica Simple::\\{mlang es\\}¿Cuál es el valor de pi con tres decimales?\\{mlang\\}\\{mlang en\\}What is the value of pi to three decimal places?\\{mlang\\}\\{mlang ca\\}Quin és el valor de pi amb tres decimals?\\{mlang\\}{#3.14159:0.0005}
+
+::Pregunta Numérica con Rango::\\{mlang es\\}¿Cuándo nació Ulysses S. Grant (rango de 5 años)?\\{mlang\\}\\{mlang en\\}When was Ulysses S. Grant born (5 year range)?\\{mlang\\}\\{mlang ca\\}Quan va néixer Ulysses S. Grant (rang de 5 anys)?\\{mlang\\}{#1822:5}
 
 ::Pregunta Numérica con Crédito Parcial::\\{mlang es\\}¿En qué año se descubrió América?\\{mlang\\}\\{mlang en\\}In what year was America discovered?\\{mlang\\}\\{mlang ca\\}En quin any es va descobrir Amèrica?\\{mlang\\}{#
-=1492:0#\\{mlang es\\}¡Exacto! Cristóbal Colón llegó a América en 1492.\\{mlang\\}\\{mlang en\\}Exactly! Christopher Columbus reached America in 1492.\\{mlang\\}\\{mlang ca\\}Exacte! Cristòfor Colom va arribar a Amèrica el 1492.\\{mlang\\}
-=%50%1490:2#\\{mlang es\\}Casi correcto. Fue en 1492.\\{mlang\\}\\{mlang en\\}Close. It was 1492.\\{mlang\\}\\{mlang ca\\}Gairebé correcte. Va ser el 1492.\\{mlang\\}
+=1492:0
+=%50%1822:2
 }
 
 ::Pregunta de Ensayo::\\{mlang es\\}Explica la importancia de la Revolución Francesa en la historia europea.\\{mlang\\}\\{mlang en\\}Explain the importance of the French Revolution in European history.\\{mlang\\}\\{mlang ca\\}Explica la importància de la Revolució Francesa en la història europea.\\{mlang\\}{}

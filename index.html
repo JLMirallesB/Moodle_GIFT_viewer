@@ -723,6 +723,8 @@
                 edit: '✏️ Editar',
                 save: '💾 Guardar',
                 cancel: '❌ Cancelar',
+                delete: '🗑️ Borrar',
+                addAnswer: '➕ Añadir respuesta',
                 exportTitle: '📤 Exportar Código GIFT Editado',
                 copyBtn: '📋 Copiar Código',
                 downloadBtn: '💾 Descargar Archivo',
@@ -780,6 +782,8 @@
                 edit: '✏️ Editar',
                 save: '💾 Guardar',
                 cancel: '❌ Cancel·lar',
+                delete: '🗑️ Esborrar',
+                addAnswer: '➕ Afegir resposta',
                 exportTitle: '📤 Exportar Codi GIFT Editat',
                 copyBtn: '📋 Copiar Codi',
                 downloadBtn: '💾 Descarregar Fitxer',
@@ -837,6 +841,8 @@
                 edit: '✏️ Edit',
                 save: '💾 Save',
                 cancel: '❌ Cancel',
+                delete: '🗑️ Delete',
+                addAnswer: '➕ Add answer',
                 exportTitle: '📤 Export Edited GIFT Code',
                 copyBtn: '📋 Copy Code',
                 downloadBtn: '💾 Download File',
@@ -1058,6 +1064,50 @@
             
             contentEl.style.display = 'block';
             editEl.style.display = 'none';
+        }
+
+        function deleteShortAnswer(questionIndex, answerIndex) {
+            const t = translations[currentLanguage];
+            if (!confirm(`¿Estás seguro de que quieres borrar esta respuesta?`)) {
+                return;
+            }
+
+            originalParsedQuestions[questionIndex].answers.splice(answerIndex, 1);
+
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
+        function addShortAnswer(questionIndex) {
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+
+            const newAnswer = {
+                text: currentLang !== 'default' ? `\\{mlang ${currentLang}\\}Nueva respuesta\\{mlang\\}` : 'Nueva respuesta',
+                weight: 100,
+                feedback: ''
+            };
+
+            originalParsedQuestions[questionIndex].answers.push(newAnswer);
+
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            filterAndDisplayQuestions();
+            updateExportSection();
         }
 
         function saveEdit(questionIndex, section, subIndex = null) {
@@ -1875,14 +1925,17 @@
         function renderShortAnswer(question, questionIndex) {
             const t = translations[currentLanguage];
             let html = `<div class="input-box">${t.shortAnswerExpected}</div>`;
-            html += `<div style="margin-top: 15px;"><strong>${t.acceptedAnswers}</strong></div>`;
+            html += `<div style="margin-top: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">`;
+            html += `<strong>${t.acceptedAnswers}</strong>`;
+            html += `<button class="small success" onclick="addShortAnswer(${questionIndex})" style="opacity: 1;">${t.addAnswer}</button>`;
+            html += `</div>`;
             html += '<ul class="answers-list">';
 
             question.answers.forEach((answer, answerIndex) => {
                 const className = answer.weight === 100 ? 'correct' : 'partial';
 
                 html += `
-                    <li class="answer-item ${className}">
+                    <li class="answer-item ${className}" style="position: relative;">
                         <div class="answer-marker">✓</div>
                         <div class="answer-content" style="width: 100%;">
                             <div class="editable-section">
@@ -1897,7 +1950,10 @@
                                         <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'answer', ${answerIndex})">${t.cancel}</button>
                                     </div>
                                 </div>
-                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})">${t.edit}</button>
+                                <div style="display: flex; gap: 5px; position: absolute; top: 5px; right: 5px;">
+                                    <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})" style="opacity: 1; position: static;">${t.edit}</button>
+                                    ${question.answers.length > 1 ? `<button class="small secondary" onclick="deleteShortAnswer(${questionIndex}, ${answerIndex})" style="opacity: 1; position: static; background: #dc3545;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">${t.delete}</button>` : ''}
+                                </div>
                             </div>
                             ${answer.feedback ? `
                                 <div class="editable-section">

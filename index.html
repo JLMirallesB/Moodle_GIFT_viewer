@@ -36,6 +36,7 @@
         .header h1 {
             font-size: 2em;
             margin-bottom: 10px;
+            margin-top: 10px;
         }
 
         .header p {
@@ -44,12 +45,12 @@
         }
 
         .language-selector {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            justify-content: center;
         }
 
         .language-selector label {
@@ -337,6 +338,30 @@
         }
 
         .editable-section:hover .edit-button {
+            opacity: 1;
+        }
+
+        .delete-question-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s, background 0.2s;
+        }
+
+        .delete-question-button:hover {
+            background: #c82333;
+        }
+
+        .question-card:hover .delete-question-button {
             opacity: 1;
         }
 
@@ -641,6 +666,517 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Dark Mode - Moodle Style */
+        [data-theme="dark"] {
+            --bg-color: #1d2125;
+            --text-color: #dee2e6;
+            --card-bg: #2b3137;
+            --border-color: #495057;
+            --header-bg: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
+            --moodle-orange: #f7931e;
+            --moodle-blue: #0f6cbf;
+        }
+
+        [data-theme="dark"] body {
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .container {
+            background: var(--card-bg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        [data-theme="dark"] .header {
+            background: var(--header-bg);
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .header h1,
+        [data-theme="dark"] .header p {
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .question-card {
+            background: #343a40;
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .question-header {
+            background: #2b3137;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .question-title {
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] input,
+        [data-theme="dark"] select {
+            background: #1d2125;
+            color: #dee2e6;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] textarea::placeholder {
+            color: #6c757d;
+        }
+
+        [data-theme="dark"] .info-box {
+            background: #0d6efd;
+            border-color: #0a58ca;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .summary-box {
+            background: #343a40;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .summary-title {
+            color: var(--moodle-orange);
+        }
+
+        [data-theme="dark"] .summary-item {
+            background: #2b3137;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .summary-count {
+            color: var(--moodle-orange);
+        }
+
+        [data-theme="dark"] .answer-item.correct {
+            background: #1e4620;
+            border-color: #28a745;
+            color: #d4edda;
+        }
+
+        [data-theme="dark"] .answer-item.incorrect {
+            background: #4a1a1a;
+            border-color: #dc3545;
+            color: #f8d7da;
+        }
+
+        [data-theme="dark"] .answer-item.partial {
+            background: #4a4420;
+            border-color: #ffc107;
+            color: #fff3cd;
+        }
+
+        [data-theme="dark"] .answer-text {
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] .answer-marker {
+            background: #495057;
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] .answer-item.correct .answer-marker {
+            background: #28a745;
+        }
+
+        [data-theme="dark"] .answer-item.incorrect .answer-marker {
+            background: #dc3545;
+        }
+
+        [data-theme="dark"] .answer-item.partial .answer-marker {
+            background: #ffc107;
+            color: #000;
+        }
+
+        [data-theme="dark"] .edit-mode {
+            background: #4a4420;
+            border-color: #ffc107;
+        }
+
+        [data-theme="dark"] button.success {
+            background: #198754;
+        }
+
+        [data-theme="dark"] button.success:hover {
+            background: #157347;
+        }
+
+        [data-theme="dark"] button.secondary {
+            background: #6c757d;
+        }
+
+        [data-theme="dark"] button.secondary:hover {
+            background: #5c636a;
+        }
+
+        [data-theme="dark"] .question-type-badge {
+            background: var(--moodle-blue);
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .answer-weight {
+            background: var(--moodle-orange);
+            color: #000;
+        }
+
+        [data-theme="dark"] .lang-badge.edited {
+            background: #28a745;
+            color: #fff;
+        }
+
+        [data-theme="dark"] .lang-badge.not-edited {
+            background: #6c757d;
+        }
+
+        [data-theme="dark"] .matching-pair {
+            background: #343a40;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .matching-arrow {
+            color: var(--moodle-orange);
+        }
+
+        [data-theme="dark"] .numerical-answer {
+            background: #343a40;
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .essay-placeholder {
+            background: #343a40;
+            border-color: var(--border-color);
+            color: #adb5bd;
+        }
+
+        [data-theme="dark"] #exportSection {
+            background: #343a40;
+            border-color: var(--moodle-orange);
+        }
+
+        [data-theme="dark"] #giftCodePreview {
+            background: #1d2125;
+            color: #dee2e6;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .input-section h2 {
+            color: var(--moodle-orange);
+        }
+
+        /* Fix text visibility in all states - Dark Mode */
+        [data-theme="dark"] strong {
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] p {
+            color: #dee2e6;
+        }
+
+        [data-theme="dark"] label {
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] .question-text {
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] .question-number {
+            color: var(--moodle-orange);
+        }
+
+        [data-theme="dark"] .editable-section {
+            color: #dee2e6;
+        }
+
+        [data-theme="dark"] .editable-section strong {
+            color: #f8f9fa;
+        }
+
+        /* Buttons visibility in dark mode */
+        [data-theme="dark"] button {
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] button.small {
+            background: #495057;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] button.small:hover {
+            background: #6c757d;
+        }
+
+        [data-theme="dark"] .edit-button {
+            background: #495057;
+            color: #ffffff;
+            opacity: 0;
+        }
+
+        [data-theme="dark"] .editable-section:hover .edit-button {
+            opacity: 1;
+            background: #6c757d;
+        }
+
+        [data-theme="dark"] .delete-question-button {
+            opacity: 0;
+        }
+
+        [data-theme="dark"] .question-card:hover .delete-question-button {
+            opacity: 1;
+        }
+
+        /* Footer in dark mode */
+        [data-theme="dark"] footer {
+            background: #2b3137;
+            border-color: var(--border-color);
+            color: #dee2e6;
+        }
+
+        [data-theme="dark"] footer a {
+            color: var(--moodle-orange);
+        }
+
+        [data-theme="dark"] footer a:hover {
+            color: #ff9d2e;
+        }
+
+        [data-theme="dark"] footer div {
+            border-top-color: rgba(255,255,255,0.1) !important;
+        }
+
+        /* Select elements in dark mode */
+        [data-theme="dark"] .language-selector label {
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .language-selector select {
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        [data-theme="dark"] .language-selector select:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        [data-theme="dark"] .question-lang-selector label {
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] .question-lang-selector select {
+            background: #1d2125;
+            color: #dee2e6;
+            border-color: var(--border-color);
+        }
+
+        /* Content language selector container */
+        [data-theme="dark"] #contentLanguageSelectorContainer {
+            background: #343a40;
+            border-color: var(--border-color);
+            color: #dee2e6;
+        }
+
+        [data-theme="dark"] #contentLanguageSelectorContainer label {
+            color: #f8f9fa;
+        }
+
+        [data-theme="dark"] #detectedLanguagesInfo {
+            color: #adb5bd;
+        }
+
+        [data-theme="dark"] #detectedLanguagesInfo strong {
+            color: #f8f9fa;
+        }
+
+        /* Answer feedback */
+        [data-theme="dark"] .answer-feedback {
+            color: #adb5bd;
+        }
+
+        /* Matching pairs */
+        [data-theme="dark"] .matching-question,
+        [data-theme="dark"] .matching-answer {
+            color: #f8f9fa;
+        }
+
+        /* Numerical details */
+        [data-theme="dark"] .numerical-details {
+            color: #adb5bd;
+        }
+
+        [data-theme="dark"] .numerical-value {
+            color: #f8f9fa;
+        }
+
+        /* Question controls */
+        [data-theme="dark"] .question-controls {
+            color: #dee2e6;
+        }
+
+        /* Edited languages indicator */
+        [data-theme="dark"] .edited-langs-indicator {
+            color: #dee2e6;
+        }
+
+        /* Button groups */
+        [data-theme="dark"] .button-group button {
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .button-group button:hover {
+            opacity: 0.9;
+        }
+
+        /* Main buttons */
+        [data-theme="dark"] button:not(.small):not(.help-btn-inline):not(.delete-question-button):not(.edit-button) {
+            background: var(--moodle-blue);
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] button:not(.small):not(.help-btn-inline):not(.delete-question-button):not(.edit-button):hover {
+            background: #0c5aa6;
+        }
+
+        [data-theme="dark"] button.secondary:not(.small) {
+            background: #6c757d;
+        }
+
+        [data-theme="dark"] button.secondary:not(.small):hover {
+            background: #5c636a;
+        }
+
+        /* Export section */
+        [data-theme="dark"] #exportSection h3 {
+            color: var(--moodle-orange);
+        }
+
+        [data-theme="dark"] #copyBtn,
+        [data-theme="dark"] #downloadBtn {
+            color: #ffffff;
+        }
+
+        /* Help Button Inline */
+        .help-btn-inline {
+            background: #f7931e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .help-btn-inline:hover {
+            background: #e07e0a;
+            transform: translateY(-1px);
+        }
+
+        [data-theme="dark"] .help-btn-inline {
+            background: #f7931e;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .help-btn-inline:hover {
+            background: #ff9d2e;
+        }
+
+        /* Help Modal */
+        .help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .help-modal.show {
+            display: flex;
+        }
+
+        .help-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        [data-theme="dark"] .help-content {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        .help-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .help-close:hover {
+            background: #c82333;
+        }
+
+        .help-content h3 {
+            color: #2196F3;
+            margin-top: 20px;
+        }
+
+        [data-theme="dark"] .help-content h3 {
+            color: #64b5f6;
+        }
+
+        .help-content ul {
+            padding-left: 20px;
+        }
+
+        .help-content li {
+            margin: 8px 0;
+        }
+
+        /* Ko-fi Link */
+        .kofi-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #FF5E5B;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .kofi-link:hover {
+            background: #e04e4b;
+            transform: scale(1.05);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -657,9 +1193,28 @@
                     <option value="fr">Français</option>
                     <option value="de">Deutsch</option>
                 </select>
+
+                <label for="themeSelect" id="themeLabel" style="margin-left: 20px;">🎨 Tema:</label>
+                <select id="themeSelect" onchange="setTheme(this.value)">
+                    <option value="light">☀️ Claro</option>
+                    <option value="dark">🌙 Oscuro</option>
+                    <option value="system" selected>💻 Sistema</option>
+                </select>
+
+                <button class="help-btn-inline" onclick="toggleHelp()" id="helpBtn" style="margin-left: 20px;">❓ Ayuda</button>
             </div>
+
             <h1 id="mainTitle">📚 Visualizador GIFT de Moodle (con soporte mlang y edición)</h1>
             <p id="mainSubtitle">Visualiza y edita tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).</p>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="help-modal" id="helpModal" onclick="closeHelpIfClickOutside(event)">
+            <div class="help-content">
+                <button class="help-close" onclick="toggleHelp()">×</button>
+                <h2 id="helpTitle">Ayuda - Instrucciones de Uso</h2>
+                <div id="helpContentBody"></div>
+            </div>
         </div>
 
         <div class="input-section">
@@ -691,6 +1246,13 @@
         <footer>
             <p id="footerCreated">Creado por <strong>José Luis Miralles Bono</strong></p>
             <p><a href="https://www.jlmirall.es" target="_blank" rel="noopener noreferrer">www.jlmirall.es</a></p>
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <p id="kofiText" style="margin-bottom: 10px; font-size: 0.95em; opacity: 0.9;"></p>
+                <a href="https://ko-fi.com/miralles" target="_blank" rel="noopener noreferrer" class="kofi-link">
+                    <span style="font-size: 1.3em;">☕</span>
+                    <span id="kofiLinkText"></span>
+                </a>
+            </div>
         </footer>
     </div>
 
@@ -705,6 +1267,7 @@
                 exampleBtn: '📝 Cargar Ejemplo',
                 clearBtn: '🗑️ Limpiar',
                 langLabel: '🌐 Idioma:',
+                themeLabel: '🎨 Tema:',
                 contentLangLabel: '🌍 Ver pregunta en el idioma:',
                 detectedLangsLabel: 'Idiomas detectados:',
                 footerCreated: 'Creado por',
@@ -754,7 +1317,43 @@
                 essayText: 'El estudiante debe escribir una respuesta tipo ensayo',
                 essayManual: 'Esta pregunta requiere evaluación manual',
                 acceptedRange: 'Rango aceptado:',
-                placeholder: 'Pega aquí tu código GIFT...\n\nEjemplo:\n::Pregunta 1::¿Cuál es la capital de Francia?{\n=París #¡Correcto!\n~Londres #Incorrecto, esa es la capital de Inglaterra\n~Madrid #Incorrecto, esa es la capital de España\n}\n\n::Pregunta 2::La tierra es plana.{F}'
+                placeholder: 'Pega aquí tu código GIFT...\n\nEjemplo:\n::Pregunta 1::¿Cuál es la capital de Francia?{\n=París #¡Correcto!\n~Londres #Incorrecto, esa es la capital de Inglaterra\n~Madrid #Incorrecto, esa es la capital de España\n}\n\n::Pregunta 2::La tierra es plana.{F}',
+                themeLight: '☀️',
+                themeDark: '🌙',
+                themeSystem: '💻',
+                help: '❓',
+                helpBtn: '❓ Ayuda',
+                helpTitle: 'Ayuda - Instrucciones de Uso',
+                kofiDrink: 'una horchata',
+                kofiText: '¿Te gusta esta herramienta? Invita al creador a',
+                helpContent: `
+                    <h3>📝 Funcionalidades Principales</h3>
+                    <ul>
+                        <li><strong>Visualizar preguntas GIFT:</strong> Pega código GIFT y haz clic en "Visualizar Preguntas"</li>
+                        <li><strong>Soporte multiidioma (mlang):</strong> Detecta y visualiza contenido en múltiples idiomas</li>
+                        <li><strong>Editar preguntas:</strong> Pasa el ratón sobre cualquier sección para ver el botón de edición ✏️</li>
+                        <li><strong>Añadir/Borrar preguntas:</strong> Usa el botón "➕ Añadir Nueva Pregunta" o borra con 🗑️</li>
+                        <li><strong>Editar respuestas:</strong> Cambia el peso (%) para marcar cuál es correcta</li>
+                        <li><strong>Exportar cambios:</strong> Los cambios se exportan automáticamente en formato GIFT</li>
+                    </ul>
+                    <h3>🎨 Tipos de Pregunta Soportados</h3>
+                    <ul>
+                        <li>Opción Múltiple / Respuesta Múltiple</li>
+                        <li>Verdadero/Falso</li>
+                        <li>Respuesta Corta</li>
+                        <li>Palabra Faltante (Missing Word)</li>
+                        <li>Emparejamiento (Matching)</li>
+                        <li>Numérica</li>
+                        <li>Ensayo</li>
+                    </ul>
+                    <h3>⚡ Atajos y Consejos</h3>
+                    <ul>
+                        <li>Los botones de edición aparecen al pasar el ratón</li>
+                        <li>Puedes cambiar el idioma de visualización por pregunta</li>
+                        <li>El peso 100 = correcta, 0 = incorrecta, valores intermedios = crédito parcial</li>
+                        <li>Usa el selector de tema (☀️/🌙/💻) para cambiar la apariencia</li>
+                    </ul>
+                `
             },
             ca: {
                 mainTitle: '📚 Visualitzador GIFT de Moodle (amb suport mlang i edició)',
@@ -764,6 +1363,7 @@
                 exampleBtn: '📝 Carregar Exemple',
                 clearBtn: '🗑️ Netejar',
                 langLabel: '🌐 Idioma:',
+                themeLabel: '🎨 Tema:',
                 contentLangLabel: '🌍 Veure pregunta en l\'idioma:',
                 detectedLangsLabel: 'Idiomes detectats:',
                 footerCreated: 'Creat per',
@@ -813,7 +1413,43 @@
                 essayText: 'L\'estudiant ha d\'escriure una resposta tipus assaig',
                 essayManual: 'Aquesta pregunta requereix avaluació manual',
                 acceptedRange: 'Rang acceptat:',
-                placeholder: 'Enganxa aquí el teu codi GIFT...'
+                placeholder: 'Enganxa aquí el teu codi GIFT...',
+                themeLight: '☀️',
+                themeDark: '🌙',
+                themeSystem: '💻',
+                help: '❓',
+                helpBtn: '❓ Ajuda',
+                helpTitle: 'Ajuda - Instruccions d\'Ús',
+                kofiDrink: 'una horxata',
+                kofiText: 'T\'agrada aquesta eina? Convida al creador a',
+                helpContent: `
+                    <h3>📝 Funcionalitats Principals</h3>
+                    <ul>
+                        <li><strong>Visualitzar preguntes GIFT:</strong> Enganxa codi GIFT i fes clic a "Visualitzar Preguntes"</li>
+                        <li><strong>Suport multiidioma (mlang):</strong> Detecta i visualitza contingut en múltiples idiomes</li>
+                        <li><strong>Editar preguntes:</strong> Passa el ratolí sobre qualsevol secció per veure el botó d'edició ✏️</li>
+                        <li><strong>Afegir/Esborrar preguntes:</strong> Usa el botó "➕ Afegir Nova Pregunta" o esborra amb 🗑️</li>
+                        <li><strong>Editar respostes:</strong> Canvia el pes (%) per marcar quina és correcta</li>
+                        <li><strong>Exportar canvis:</strong> Els canvis s'exporten automàticament en format GIFT</li>
+                    </ul>
+                    <h3>🎨 Tipus de Pregunta Suportats</h3>
+                    <ul>
+                        <li>Opció Múltiple / Resposta Múltiple</li>
+                        <li>Vertader/Fals</li>
+                        <li>Resposta Curta</li>
+                        <li>Paraula Faltant (Missing Word)</li>
+                        <li>Emparellament (Matching)</li>
+                        <li>Numèrica</li>
+                        <li>Assaig</li>
+                    </ul>
+                    <h3>⚡ Dreceres i Consells</h3>
+                    <ul>
+                        <li>Els botons d'edició apareixen en passar el ratolí</li>
+                        <li>Pots canviar l'idioma de visualització per pregunta</li>
+                        <li>El pes 100 = correcta, 0 = incorrecta, valors intermedis = crèdit parcial</li>
+                        <li>Usa el selector de tema (☀️/🌙/💻) per canviar l'aparença</li>
+                    </ul>
+                `
             },
             en: {
                 mainTitle: '📚 Moodle GIFT Viewer (mlang supported + editing)',
@@ -823,6 +1459,7 @@
                 exampleBtn: '📝 Load Example',
                 clearBtn: '🗑️ Clear',
                 langLabel: '🌐 Language:',
+                themeLabel: '🎨 Theme:',
                 contentLangLabel: '🌍 View question in language:',
                 detectedLangsLabel: 'Detected languages:',
                 footerCreated: 'Created by',
@@ -872,11 +1509,48 @@
                 essayText: 'Student must write an essay-type answer',
                 essayManual: 'This question requires manual evaluation',
                 acceptedRange: 'Accepted range:',
-                placeholder: 'Paste your GIFT code here...'
+                placeholder: 'Paste your GIFT code here...',
+                themeLight: '☀️',
+                themeDark: '🌙',
+                themeSystem: '💻',
+                help: '❓',
+                helpBtn: '❓ Help',
+                helpTitle: 'Help - Usage Instructions',
+                kofiDrink: 'a coffee',
+                kofiText: 'Do you like this tool? Buy the creator',
+                helpContent: `
+                    <h3>📝 Main Features</h3>
+                    <ul>
+                        <li><strong>View GIFT questions:</strong> Paste GIFT code and click "Visualize Questions"</li>
+                        <li><strong>Multilingual support (mlang):</strong> Detects and displays content in multiple languages</li>
+                        <li><strong>Edit questions:</strong> Hover over any section to see the edit button ✏️</li>
+                        <li><strong>Add/Delete questions:</strong> Use the "➕ Add New Question" button or delete with 🗑️</li>
+                        <li><strong>Edit answers:</strong> Change the weight (%) to mark which is correct</li>
+                        <li><strong>Export changes:</strong> Changes are automatically exported in GIFT format</li>
+                    </ul>
+                    <h3>🎨 Supported Question Types</h3>
+                    <ul>
+                        <li>Multiple Choice / Multiple Response</li>
+                        <li>True/False</li>
+                        <li>Short Answer</li>
+                        <li>Missing Word</li>
+                        <li>Matching</li>
+                        <li>Numerical</li>
+                        <li>Essay</li>
+                    </ul>
+                    <h3>⚡ Shortcuts and Tips</h3>
+                    <ul>
+                        <li>Edit buttons appear when you hover the mouse</li>
+                        <li>You can change the display language per question</li>
+                        <li>Weight 100 = correct, 0 = incorrect, intermediate values = partial credit</li>
+                        <li>Use the theme selector (☀️/🌙/💻) to change the appearance</li>
+                    </ul>
+                `
             }
         };
 
         let currentLanguage = 'es';
+        let currentTheme = 'system'; // 'light', 'dark', o 'system'
         let originalParsedQuestions = [];
         let detectedContentLanguages = new Set();
         let selectedContentLanguage = null;
@@ -915,6 +1589,8 @@
             document.getElementById('exampleBtn').textContent = t.exampleBtn;
             document.getElementById('clearBtn').textContent = t.clearBtn;
             document.getElementById('langLabel').textContent = t.langLabel;
+            document.getElementById('themeLabel').textContent = t.themeLabel;
+            document.getElementById('helpBtn').textContent = t.helpBtn;
             document.getElementById('giftInput').placeholder = t.placeholder;
             document.getElementById('contentLangLabel').textContent = t.contentLangLabel;
             document.getElementById('exportTitle').textContent = t.exportTitle;
@@ -929,8 +1605,68 @@
                 const languages = Array.from(detectedContentLanguages).sort();
                 infoEl.innerHTML = `<strong>${t.detectedLangsLabel}</strong> ${languages.join(', ')}`;
             }
+
+            // Update help and ko-fi
+            document.getElementById('helpTitle').textContent = t.helpTitle;
+            document.getElementById('helpContentBody').innerHTML = t.helpContent;
+            document.getElementById('kofiText').textContent = t.kofiText;
+            document.getElementById('kofiLinkText').textContent = t.kofiDrink;
         }
-        
+
+        // Theme functions
+        function setTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('theme', theme);
+            applyTheme();
+            updateThemeButtons();
+        }
+
+        function applyTheme() {
+            const html = document.documentElement;
+
+            if (currentTheme === 'system') {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                html.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            } else {
+                html.setAttribute('data-theme', currentTheme);
+            }
+        }
+
+        function updateThemeButtons() {
+            const themeSelect = document.getElementById('themeSelect');
+            if (themeSelect) {
+                themeSelect.value = currentTheme;
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                currentTheme = savedTheme;
+            }
+            applyTheme();
+            updateThemeButtons();
+
+            // Listen to system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (currentTheme === 'system') {
+                    applyTheme();
+                }
+            });
+        }
+
+        // Help modal functions
+        function toggleHelp() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('show');
+        }
+
+        function closeHelpIfClickOutside(event) {
+            if (event.target.id === 'helpModal') {
+                toggleHelp();
+            }
+        }
+
         function handleContentLanguageChange() {
             selectedContentLanguage = document.getElementById('contentLanguageSelect').value;
             filterAndDisplayQuestions();
@@ -1195,6 +1931,294 @@
             updateExportSection();
         }
 
+        function deleteQuestion(questionIndex) {
+            const t = translations[currentLanguage];
+            const question = originalParsedQuestions[questionIndex];
+
+            if (!confirm(`¿Estás seguro de que quieres borrar esta pregunta?\n\n"${question.title}"\n\nEsta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            // Eliminar la pregunta del array
+            originalParsedQuestions.splice(questionIndex, 1);
+
+            // Limpiar las ediciones y overrides relacionados
+            // Necesitamos reorganizar los índices
+            const newEditedQuestions = {};
+            const newQuestionLanguageOverrides = {};
+
+            Object.keys(editedQuestions).forEach(idx => {
+                const index = parseInt(idx);
+                if (index < questionIndex) {
+                    newEditedQuestions[index] = editedQuestions[index];
+                } else if (index > questionIndex) {
+                    newEditedQuestions[index - 1] = editedQuestions[index];
+                }
+            });
+
+            Object.keys(questionLanguageOverrides).forEach(idx => {
+                const index = parseInt(idx);
+                if (index < questionIndex) {
+                    newQuestionLanguageOverrides[index] = questionLanguageOverrides[index];
+                } else if (index > questionIndex) {
+                    newQuestionLanguageOverrides[index - 1] = questionLanguageOverrides[index];
+                }
+            });
+
+            editedQuestions = newEditedQuestions;
+            questionLanguageOverrides = newQuestionLanguageOverrides;
+
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
+        function addQuestion() {
+            const t = translations[currentLanguage];
+
+            // Crear un diálogo personalizado para seleccionar el tipo
+            const typeOptions = [
+                { value: 'multipleChoice', label: 'Opción Múltiple (Multiple Choice)' },
+                { value: 'trueFalse', label: 'Verdadero/Falso (True/False)' },
+                { value: 'shortAnswer', label: 'Respuesta Corta (Short Answer)' },
+                { value: 'missingWord', label: 'Palabra Faltante (Missing Word)' },
+                { value: 'matching', label: 'Emparejamiento (Matching)' },
+                { value: 'numerical', label: 'Numérica (Numerical)' },
+                { value: 'essay', label: 'Ensayo (Essay)' }
+            ];
+
+            let optionsHtml = '';
+            typeOptions.forEach(opt => {
+                optionsHtml += `<option value="${opt.value}">${opt.label}</option>`;
+            });
+
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            dialog.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    <h3 style="margin-top: 0;">Selecciona el tipo de pregunta</h3>
+                    <select id="questionTypeSelect" style="width: 100%; padding: 10px; margin: 15px 0; font-size: 1em; border: 2px solid #ddd; border-radius: 4px;">
+                        ${optionsHtml}
+                    </select>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                        <button id="cancelAddQuestion" style="padding: 10px 20px; border: none; background: #6c757d; color: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
+                        <button id="confirmAddQuestion" style="padding: 10px 20px; border: none; background: #28a745; color: white; border-radius: 4px; cursor: pointer;">Crear</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(dialog);
+
+            document.getElementById('cancelAddQuestion').onclick = () => {
+                document.body.removeChild(dialog);
+            };
+
+            document.getElementById('confirmAddQuestion').onclick = () => {
+                const selectedType = document.getElementById('questionTypeSelect').value;
+                document.body.removeChild(dialog);
+                createNewQuestion(selectedType);
+            };
+        }
+
+        function createNewQuestion(type) {
+            // Obtener todos los idiomas detectados
+            const languages = Array.from(detectedContentLanguages);
+
+            // Función helper para crear texto multiidioma
+            const createMlangText = (defaultTexts) => {
+                if (languages.length === 0) {
+                    return defaultTexts['default'] || defaultTexts['es'] || 'Texto por defecto';
+                }
+
+                let mlangText = '';
+                languages.forEach(lang => {
+                    const text = defaultTexts[lang] || defaultTexts['default'] || defaultTexts['es'] || 'Texto por defecto';
+                    mlangText += `\\{mlang ${lang}\\}${text}\\{mlang\\}`;
+                });
+                return mlangText;
+            };
+
+            let newQuestion = {
+                title: createMlangText({
+                    es: 'Nueva pregunta',
+                    en: 'New question',
+                    ca: 'Nova pregunta',
+                    default: 'Nueva pregunta'
+                }),
+                text: createMlangText({
+                    es: 'Escribe aquí el texto de la pregunta',
+                    en: 'Write the question text here',
+                    ca: 'Escriu aquí el text de la pregunta',
+                    default: 'Escribe aquí el texto de la pregunta'
+                }),
+                type: type,
+                answers: []
+            };
+
+            // Configurar según el tipo
+            switch(type) {
+                case 'multipleChoice':
+                case 'multipleResponse':
+                    newQuestion.answers = [
+                        {
+                            text: createMlangText({
+                                es: 'Respuesta correcta',
+                                en: 'Correct answer',
+                                ca: 'Resposta correcta',
+                                default: 'Respuesta correcta'
+                            }),
+                            weight: 100,
+                            correct: true,
+                            feedback: ''
+                        },
+                        {
+                            text: createMlangText({
+                                es: 'Respuesta incorrecta 1',
+                                en: 'Incorrect answer 1',
+                                ca: 'Resposta incorrecta 1',
+                                default: 'Respuesta incorrecta 1'
+                            }),
+                            weight: 0,
+                            correct: false,
+                            feedback: ''
+                        },
+                        {
+                            text: createMlangText({
+                                es: 'Respuesta incorrecta 2',
+                                en: 'Incorrect answer 2',
+                                ca: 'Resposta incorrecta 2',
+                                default: 'Respuesta incorrecta 2'
+                            }),
+                            weight: 0,
+                            correct: false,
+                            feedback: ''
+                        }
+                    ];
+                    break;
+
+                case 'trueFalse':
+                    newQuestion.correctAnswer = true;
+                    newQuestion.wrongFeedback = '';
+                    newQuestion.correctFeedback = '';
+                    break;
+
+                case 'shortAnswer':
+                    newQuestion.answers = [
+                        {
+                            text: createMlangText({
+                                es: 'respuesta correcta',
+                                en: 'correct answer',
+                                ca: 'resposta correcta',
+                                default: 'respuesta correcta'
+                            }),
+                            weight: 100,
+                            feedback: ''
+                        }
+                    ];
+                    break;
+
+                case 'missingWord':
+                    newQuestion.textAfter = createMlangText({
+                        es: 'texto después del hueco',
+                        en: 'text after the blank',
+                        ca: 'text després del buit',
+                        default: 'texto después del hueco'
+                    });
+                    newQuestion.answers = [
+                        {
+                            text: createMlangText({
+                                es: 'respuesta correcta',
+                                en: 'correct answer',
+                                ca: 'resposta correcta',
+                                default: 'respuesta correcta'
+                            }),
+                            weight: 100,
+                            feedback: ''
+                        }
+                    ];
+                    break;
+
+                case 'matching':
+                    newQuestion.pairs = [
+                        {
+                            question: createMlangText({
+                                es: 'Pregunta 1',
+                                en: 'Question 1',
+                                ca: 'Pregunta 1',
+                                default: 'Pregunta 1'
+                            }),
+                            answer: createMlangText({
+                                es: 'Respuesta 1',
+                                en: 'Answer 1',
+                                ca: 'Resposta 1',
+                                default: 'Respuesta 1'
+                            })
+                        },
+                        {
+                            question: createMlangText({
+                                es: 'Pregunta 2',
+                                en: 'Question 2',
+                                ca: 'Pregunta 2',
+                                default: 'Pregunta 2'
+                            }),
+                            answer: createMlangText({
+                                es: 'Respuesta 2',
+                                en: 'Answer 2',
+                                ca: 'Resposta 2',
+                                default: 'Respuesta 2'
+                            })
+                        }
+                    ];
+                    delete newQuestion.answers;
+                    break;
+
+                case 'numerical':
+                    newQuestion.answers = [
+                        {
+                            value: 0,
+                            margin: 0,
+                            weight: 100
+                        }
+                    ];
+                    break;
+
+                case 'essay':
+                    // No necesita respuestas
+                    break;
+            }
+
+            // Añadir la pregunta al principio del array
+            originalParsedQuestions.unshift(newQuestion);
+
+            // Reorganizar índices de editedQuestions y questionLanguageOverrides
+            const newEditedQuestions = {};
+            const newQuestionLanguageOverrides = {};
+
+            Object.keys(editedQuestions).forEach(idx => {
+                const index = parseInt(idx);
+                newEditedQuestions[index + 1] = editedQuestions[index];
+            });
+
+            Object.keys(questionLanguageOverrides).forEach(idx => {
+                const index = parseInt(idx);
+                newQuestionLanguageOverrides[index + 1] = questionLanguageOverrides[index];
+            });
+
+            editedQuestions = newEditedQuestions;
+            questionLanguageOverrides = newQuestionLanguageOverrides;
+
+            // Marcar como editada
+            editedQuestions[0] = {
+                langs: new Set(languages.length > 0 ? languages : ['default']),
+                edits: {}
+            };
+
+            filterAndDisplayQuestions();
+            updateExportSection();
+
+            // Scroll hacia arriba para ver la nueva pregunta
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function saveEdit(questionIndex, section, subIndex = null) {
             const editId = `edit-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
             const editEl = document.getElementById(editId);
@@ -1288,6 +2312,13 @@
                     currentLang,
                     newValue
                 );
+            } else if (section === 'textAfter') {
+                originalParsedQuestions[questionIndex].textAfter = updateMlangText(
+                    originalParsedQuestions[questionIndex].textAfter || '',
+                    currentLang,
+                    newValue
+                );
+                editedQuestions[questionIndex].edits[currentLang].textAfter = newValue;
             }
 
             cancelEdit(questionIndex, section, subIndex);
@@ -1335,14 +2366,44 @@
 
         function generateGIFTCode() {
             let giftCode = '';
-            
+
             originalParsedQuestions.forEach((question, idx) => {
                 giftCode += `::${question.title}::${question.text}`;
-                
+
                 if (question.type === 'trueFalse') {
                     giftCode += `{${question.correctAnswer ? 'T' : 'F'}}`;
                 } else if (question.type === 'essay') {
                     giftCode += `{}`;
+                } else if (question.type === 'missingWord') {
+                    // Missing Word format: text before {answers} text after
+                    const isMultipleChoice = question.answers.some(a => a.weight !== undefined && a.weight !== 100);
+
+                    if (isMultipleChoice) {
+                        giftCode += '{\n';
+                        question.answers.forEach(answer => {
+                            const prefix = answer.weight === 100 ? '=' : (answer.weight > 0 ? `~%${answer.weight}%` : '~');
+                            giftCode += `${prefix}${answer.text}`;
+                            if (answer.feedback) {
+                                giftCode += `#${answer.feedback}`;
+                            }
+                            giftCode += '\n';
+                        });
+                        giftCode += '}';
+                    } else {
+                        // Short answer format
+                        giftCode += '{\n';
+                        question.answers.forEach(answer => {
+                            giftCode += `=${answer.text}`;
+                            if (answer.feedback) {
+                                giftCode += `#${answer.feedback}`;
+                            }
+                            giftCode += '\n';
+                        });
+                        giftCode += '}';
+                    }
+
+                    // Add text after the closing brace
+                    giftCode += question.textAfter;
                 } else if (question.type === 'multipleChoice' || question.type === 'multipleResponse') {
                     giftCode += '{\n';
                     question.answers.forEach(answer => {
@@ -1382,10 +2443,10 @@
                     });
                     giftCode += '}';
                 }
-                
+
                 giftCode += '\n\n';
             });
-            
+
             return giftCode;
         }
 
@@ -1545,14 +2606,20 @@
             
             questionText = block.substring(0, braceIndex).trim();
             answersBlock = block.substring(braceIndex + 1, closingBraceIndex).trim();
-            
+
+            // Check if there's text after the closing brace (Missing Word format)
+            const textAfterBrace = block.substring(closingBraceIndex + 1).trim();
+            const isMissingWord = textAfterBrace.length > 0;
+
             if (!title) {
-                title = questionText.length > 50 ? questionText.substring(0, 50) + '...' : questionText;
+                const fullText = isMissingWord ? questionText + ' _____ ' + textAfterBrace : questionText;
+                title = fullText.length > 50 ? fullText.substring(0, 50) + '...' : fullText;
             }
-            
+
             const question = {
                 title: title,
                 text: questionText,
+                textAfter: isMissingWord ? textAfterBrace : '',
                 type: '',
                 answers: []
             };
@@ -1597,21 +2664,26 @@
                 const trimmed = line.trim();
                 return trimmed.startsWith('=') || trimmed === '';
             });
-            
+
             if (hasOnlyCorrect && lines.length > 0) {
-                question.type = 'shortAnswer';
+                question.type = question.textAfter ? 'missingWord' : 'shortAnswer';
                 question.answers = parseShortAnswers(answersBlock);
                 return question;
             }
-            
+
             question.type = 'multipleChoice';
             question.answers = parseMultipleChoiceAnswers(answersBlock);
-            
+
             const correctCount = question.answers.filter(a => a.weight === 100).length;
             if (correctCount > 1) {
                 question.type = 'multipleResponse';
             }
-            
+
+            // If there's text after the answers, it's a missing word question
+            if (question.textAfter) {
+                question.type = 'missingWord';
+            }
+
             return question;
         }
 
@@ -1794,7 +2866,16 @@
             });
             
             let html = `<div class="info-box">${t.questionsFound} ${questions.length} ${t.questions}</div>`;
-            
+
+            // Botón para añadir nueva pregunta
+            html += `
+                <div style="margin: 20px 0; text-align: center;">
+                    <button onclick="addQuestion()" style="background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-size: 1.1em; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        ➕ Añadir Nueva Pregunta
+                    </button>
+                </div>
+            `;
+
             html += `
                 <div class="summary-box">
                     <div class="summary-title">
@@ -1871,8 +2952,11 @@
                         html += `</div>`;
                     }
                 }
-                
+
                 html += `
+                            <button onclick="deleteQuestion(${index})" class="delete-question-button" title="Borrar pregunta">
+                                🗑️ Borrar
+                            </button>
                         </div>
                         <div class="question-body">
                 `;
@@ -1936,6 +3020,8 @@
                     return renderNumerical(question, questionIndex);
                 case 'essay':
                     return renderEssay(question);
+                case 'missingWord':
+                    return renderMissingWord(question, questionIndex);
                 default:
                     return '<p>Tipo de pregunta no soportado</p>';
             }
@@ -2074,7 +3160,7 @@
                                     <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'wrong-feedback')">${t.cancel}</button>
                                 </div>
                             </div>
-                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'wrong-feedback')" style="opacity: 1;">${t.edit}</button>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'wrong-feedback')">${t.edit}</button>
                         </div>
                     `;
                 }
@@ -2094,7 +3180,7 @@
                                     <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'correct-feedback')">${t.cancel}</button>
                                 </div>
                             </div>
-                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'correct-feedback')" style="opacity: 1;">${t.edit}</button>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'correct-feedback')">${t.edit}</button>
                         </div>
                     `;
                 }
@@ -2133,10 +3219,8 @@
                                         <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'answer', ${answerIndex})">${t.cancel}</button>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 5px; position: absolute; top: 5px; right: 5px;">
-                                    <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})" style="opacity: 1; position: static;">${t.edit}</button>
-                                    ${question.answers.length > 1 ? `<button class="small secondary" onclick="deleteShortAnswer(${questionIndex}, ${answerIndex})" style="opacity: 1; position: static; background: #dc3545;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">${t.delete}</button>` : ''}
-                                </div>
+                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})">${t.edit}</button>
+                                ${question.answers.length > 1 ? `<button class="small edit-button" onclick="deleteShortAnswer(${questionIndex}, ${answerIndex})" style="background: #dc3545; color: white;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'" title="${t.delete}">🗑️</button>` : ''}
                             </div>
                             ${answer.feedback ? `
                                 <div class="editable-section">
@@ -2235,7 +3319,7 @@
                                     <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'numerical', ${answerIndex})">${t.cancel}</button>
                                 </div>
                             </div>
-                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'numerical', ${answerIndex})" style="position: absolute; top: 5px; right: 5px; opacity: 1;">${t.edit}</button>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'numerical', ${answerIndex})">${t.edit}</button>
                         </div>
                     </div>
                 `;
@@ -2253,6 +3337,78 @@
                     <p style="margin-top: 10px; font-size: 0.9em;">${t.essayManual}</p>
                 </div>
             `;
+        }
+
+        function renderMissingWord(question, questionIndex) {
+            const t = translations[currentLanguage];
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+
+            // Mostrar la pregunta con el blank y opciones de edición
+            const textBefore = processMlangText(question.text, currentLang);
+            const textAfter = processMlangText(question.textAfter, currentLang);
+
+            let html = `
+                <div style="background: #e7f3ff; padding: 15px; border-radius: 4px; margin-bottom: 15px; border-left: 4px solid #2196F3; position: relative;">
+
+                    <!-- Texto antes del hueco -->
+                    <div class="editable-section" style="margin-bottom: 10px;">
+                        <div id="content-${questionIndex}-text" style="position: relative;">
+                            <button class="edit-button" onclick="startEdit(${questionIndex}, 'text')">
+                                ✏️
+                            </button>
+                            <strong>Texto antes del hueco:</strong>
+                            <p style="margin: 5px 0;">${escapeHtml(textBefore)}</p>
+                        </div>
+                        <div id="edit-${questionIndex}-text" class="edit-mode" style="display: none;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Texto antes del hueco:</label>
+                            <textarea id="textarea-${questionIndex}-text">${escapeHtml(textBefore)}</textarea>
+                            <div class="edit-actions">
+                                <button class="save-btn" onclick="saveEdit(${questionIndex}, 'text')">💾 Guardar</button>
+                                <button class="cancel-btn" onclick="cancelEdit(${questionIndex}, 'text')">❌ Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- El hueco -->
+                    <div style="text-align: center; margin: 15px 0;">
+                        <span style="display: inline-block; min-width: 150px; border-bottom: 3px solid #2196F3; text-align: center; padding: 10px 20px; font-weight: bold; color: #2196F3;">
+                            _____ (hueco) _____
+                        </span>
+                    </div>
+
+                    <!-- Texto después del hueco -->
+                    <div class="editable-section" style="margin-top: 10px;">
+                        <div id="content-${questionIndex}-textAfter" style="position: relative;">
+                            <button class="edit-button" onclick="startEdit(${questionIndex}, 'textAfter')">
+                                ✏️
+                            </button>
+                            <strong>Texto después del hueco:</strong>
+                            <p style="margin: 5px 0;">${escapeHtml(textAfter)}</p>
+                        </div>
+                        <div id="edit-${questionIndex}-textAfter" class="edit-mode" style="display: none;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Texto después del hueco:</label>
+                            <textarea id="textarea-${questionIndex}-textAfter">${escapeHtml(textAfter)}</textarea>
+                            <div class="edit-actions">
+                                <button class="save-btn" onclick="saveEdit(${questionIndex}, 'textAfter')">💾 Guardar</button>
+                                <button class="cancel-btn" onclick="cancelEdit(${questionIndex}, 'textAfter')">❌ Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Determinar si es opción múltiple o respuesta corta
+            const isMultipleChoice = question.answers.some(a => a.weight !== undefined && a.weight !== 100);
+
+            if (isMultipleChoice) {
+                // Renderizar como opción múltiple
+                html += renderMultipleChoice(question, questionIndex);
+            } else {
+                // Renderizar como respuesta corta
+                html += renderShortAnswer(question, questionIndex);
+            }
+
+            return html;
         }
 
         function escapeHtml(text) {
@@ -2329,6 +3485,7 @@
 
         window.addEventListener('load', () => {
             detectBrowserLanguage();
+            initTheme();
         });
     </script>
 </body>

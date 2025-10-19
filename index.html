@@ -658,7 +658,7 @@
                     <option value="de">Deutsch</option>
                 </select>
             </div>
-            <h1 id="mainTitle">📚 Visualizador GIFT de Moodle (con soporte mlang y edición)</h1>
+            <h1 id="mainTitle">📚 Visualizador GIFT EHEY de Moodle (con soporte mlang y edición)</h1>
             <p id="mainSubtitle">Visualiza y edita tus preguntas en formato GIFT, incluyendo contenido multilingüe (mlang).</p>
         </div>
 
@@ -1115,8 +1115,34 @@
                     editedQuestions[questionIndex].edits[currentLang].feedbacks = {};
                 }
                 editedQuestions[questionIndex].edits[currentLang].feedbacks[subIndex] = newValue;
+            } else if (section === 'pair-question' && subIndex !== null) {
+                originalParsedQuestions[questionIndex].pairs[subIndex].question = updateMlangText(
+                    originalParsedQuestions[questionIndex].pairs[subIndex].question,
+                    currentLang,
+                    newValue
+                );
+                if (!editedQuestions[questionIndex].edits[currentLang].pairs) {
+                    editedQuestions[questionIndex].edits[currentLang].pairs = {};
+                }
+                if (!editedQuestions[questionIndex].edits[currentLang].pairs[subIndex]) {
+                    editedQuestions[questionIndex].edits[currentLang].pairs[subIndex] = {};
+                }
+                editedQuestions[questionIndex].edits[currentLang].pairs[subIndex].question = newValue;
+            } else if (section === 'pair-answer' && subIndex !== null) {
+                originalParsedQuestions[questionIndex].pairs[subIndex].answer = updateMlangText(
+                    originalParsedQuestions[questionIndex].pairs[subIndex].answer,
+                    currentLang,
+                    newValue
+                );
+                if (!editedQuestions[questionIndex].edits[currentLang].pairs) {
+                    editedQuestions[questionIndex].edits[currentLang].pairs = {};
+                }
+                if (!editedQuestions[questionIndex].edits[currentLang].pairs[subIndex]) {
+                    editedQuestions[questionIndex].edits[currentLang].pairs[subIndex] = {};
+                }
+                editedQuestions[questionIndex].edits[currentLang].pairs[subIndex].answer = newValue;
             }
-            
+
             cancelEdit(questionIndex, section, subIndex);
             filterAndDisplayQuestions();
             updateExportSection();
@@ -1735,9 +1761,9 @@
                 case 'trueFalse':
                     return renderTrueFalse(question);
                 case 'shortAnswer':
-                    return renderShortAnswer(question);
+                    return renderShortAnswer(question, questionIndex);
                 case 'matching':
-                    return renderMatching(question);
+                    return renderMatching(question, questionIndex);
                 case 'numerical':
                     return renderNumerical(question);
                 case 'essay':
@@ -1774,7 +1800,10 @@
                             <div class="editable-section">
                                 <div id="content-${questionIndex}-answer-${answerIndex}" class="answer-text">
                                     ${escapeHtml(answer.text)}
-                                    ${answer.weight !== 0 && answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                                    <span class="answer-weight">${answer.weight}%</span>
+                                    <span class="answer-weight" style="background: ${answer.correct ? '#28a745' : '#dc3545'}; margin-left: 5px;">
+                                        ${answer.correct ? '✓ Correcta' : '✗ Incorrecta'}
+                                    </span>
                                 </div>
                                 <div id="edit-${questionIndex}-answer-${answerIndex}" class="edit-mode" style="display: none;">
                                     <textarea>${escapeHtml(answer.text)}</textarea>
@@ -1843,46 +1872,99 @@
             return html;
         }
 
-        function renderShortAnswer(question) {
+        function renderShortAnswer(question, questionIndex) {
             const t = translations[currentLanguage];
             let html = `<div class="input-box">${t.shortAnswerExpected}</div>`;
             html += `<div style="margin-top: 15px;"><strong>${t.acceptedAnswers}</strong></div>`;
             html += '<ul class="answers-list">';
-            
-            question.answers.forEach(answer => {
+
+            question.answers.forEach((answer, answerIndex) => {
                 const className = answer.weight === 100 ? 'correct' : 'partial';
-                
+
                 html += `
                     <li class="answer-item ${className}">
                         <div class="answer-marker">✓</div>
-                        <div class="answer-content">
-                            <div class="answer-text">
-                                ${escapeHtml(answer.text)}
-                                ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                        <div class="answer-content" style="width: 100%;">
+                            <div class="editable-section">
+                                <div id="content-${questionIndex}-answer-${answerIndex}" class="answer-text">
+                                    ${escapeHtml(answer.text)}
+                                    ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                                </div>
+                                <div id="edit-${questionIndex}-answer-${answerIndex}" class="edit-mode" style="display: none;">
+                                    <textarea>${escapeHtml(answer.text)}</textarea>
+                                    <div class="edit-mode-buttons">
+                                        <button class="small success" onclick="saveEdit(${questionIndex}, 'answer', ${answerIndex})">${t.save}</button>
+                                        <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'answer', ${answerIndex})">${t.cancel}</button>
+                                    </div>
+                                </div>
+                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'answer', ${answerIndex})">${t.edit}</button>
                             </div>
-                            ${answer.feedback ? `<div class="answer-feedback">💬 ${escapeHtml(answer.feedback)}</div>` : ''}
+                            ${answer.feedback ? `
+                                <div class="editable-section">
+                                    <div id="content-${questionIndex}-feedback-${answerIndex}" class="answer-feedback">
+                                        💬 ${escapeHtml(answer.feedback)}
+                                    </div>
+                                    <div id="edit-${questionIndex}-feedback-${answerIndex}" class="edit-mode" style="display: none;">
+                                        <textarea>${escapeHtml(answer.feedback)}</textarea>
+                                        <div class="edit-mode-buttons">
+                                            <button class="small success" onclick="saveEdit(${questionIndex}, 'feedback', ${answerIndex})">${t.save}</button>
+                                            <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'feedback', ${answerIndex})">${t.cancel}</button>
+                                        </div>
+                                    </div>
+                                    <button class="small edit-button" onclick="startEdit(${questionIndex}, 'feedback', ${answerIndex})">${t.edit}</button>
+                                </div>
+                            ` : ''}
                         </div>
                     </li>
                 `;
             });
-            
+
             html += '</ul>';
             return html;
         }
 
-        function renderMatching(question) {
+        function renderMatching(question, questionIndex) {
+            const t = translations[currentLanguage];
             let html = '<div>';
-            
-            question.pairs.forEach(pair => {
+
+            question.pairs.forEach((pair, pairIndex) => {
                 html += `
                     <div class="matching-pair">
-                        <div class="matching-question">${escapeHtml(pair.question)}</div>
+                        <div class="matching-question" style="flex: 1;">
+                            <div class="editable-section">
+                                <div id="content-${questionIndex}-pair-question-${pairIndex}">
+                                    ${escapeHtml(pair.question)}
+                                </div>
+                                <div id="edit-${questionIndex}-pair-question-${pairIndex}" class="edit-mode" style="display: none;">
+                                    <textarea>${escapeHtml(pair.question)}</textarea>
+                                    <div class="edit-mode-buttons">
+                                        <button class="small success" onclick="saveEdit(${questionIndex}, 'pair-question', ${pairIndex})">${t.save}</button>
+                                        <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'pair-question', ${pairIndex})">${t.cancel}</button>
+                                    </div>
+                                </div>
+                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'pair-question', ${pairIndex})">${t.edit}</button>
+                            </div>
+                        </div>
                         <div class="matching-arrow">→</div>
-                        <div class="matching-answer">${escapeHtml(pair.answer)}</div>
+                        <div class="matching-answer" style="flex: 1;">
+                            <div class="editable-section">
+                                <div id="content-${questionIndex}-pair-answer-${pairIndex}">
+                                    ${escapeHtml(pair.answer)}
+                                </div>
+                                <div id="edit-${questionIndex}-pair-answer-${pairIndex}" class="edit-mode" style="display: none;">
+                                    <textarea>${escapeHtml(pair.answer)}</textarea>
+                                    <div class="edit-mode-buttons">
+                                        <button class="small success" onclick="saveEdit(${questionIndex}, 'pair-answer', ${pairIndex})">${t.save}</button>
+                                        <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'pair-answer', ${pairIndex})">${t.cancel}</button>
+                                    </div>
+                                </div>
+                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'pair-answer', ${pairIndex})">${t.edit}</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
-            
+
             html += '</div>';
             return html;
         }

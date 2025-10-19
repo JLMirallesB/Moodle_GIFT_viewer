@@ -2057,16 +2057,18 @@
             // Mostrar y editar feedbacks
             if (question.wrongFeedback || question.correctFeedback) {
                 html += '<div style="margin-top: 15px;">';
+                const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
 
                 if (question.wrongFeedback) {
+                    const wrongFeedbackText = extractMlangText(question.wrongFeedback, currentLang);
                     html += `
                         <div class="editable-section" style="margin-bottom: 10px;">
                             <div id="content-${questionIndex}-wrong-feedback">
                                 <strong>Feedback (respuesta incorrecta):</strong>
-                                <div class="answer-feedback">💬 ${escapeHtml(question.wrongFeedback)}</div>
+                                <div class="answer-feedback">💬 ${escapeHtml(wrongFeedbackText)}</div>
                             </div>
                             <div id="edit-${questionIndex}-wrong-feedback" class="edit-mode" style="display: none;">
-                                <textarea>${escapeHtml(question.wrongFeedback)}</textarea>
+                                <textarea>${escapeHtml(wrongFeedbackText)}</textarea>
                                 <div class="edit-mode-buttons">
                                     <button class="small success" onclick="saveEdit(${questionIndex}, 'wrong-feedback')">${t.save}</button>
                                     <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'wrong-feedback')">${t.cancel}</button>
@@ -2078,14 +2080,15 @@
                 }
 
                 if (question.correctFeedback) {
+                    const correctFeedbackText = extractMlangText(question.correctFeedback, currentLang);
                     html += `
                         <div class="editable-section">
                             <div id="content-${questionIndex}-correct-feedback">
                                 <strong>Feedback (respuesta correcta):</strong>
-                                <div class="answer-feedback">💬 ${escapeHtml(question.correctFeedback)}</div>
+                                <div class="answer-feedback">💬 ${escapeHtml(correctFeedbackText)}</div>
                             </div>
                             <div id="edit-${questionIndex}-correct-feedback" class="edit-mode" style="display: none;">
-                                <textarea>${escapeHtml(question.correctFeedback)}</textarea>
+                                <textarea>${escapeHtml(correctFeedbackText)}</textarea>
                                 <div class="edit-mode-buttons">
                                     <button class="small success" onclick="saveEdit(${questionIndex}, 'correct-feedback')">${t.save}</button>
                                     <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'correct-feedback')">${t.cancel}</button>

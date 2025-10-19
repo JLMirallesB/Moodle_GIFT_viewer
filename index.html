@@ -1179,6 +1179,22 @@
             updateExportSection();
         }
 
+        function toggleTrueFalseAnswer(questionIndex) {
+            originalParsedQuestions[questionIndex].correctAnswer = !originalParsedQuestions[questionIndex].correctAnswer;
+
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
         function saveEdit(questionIndex, section, subIndex = null) {
             const editId = `edit-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
             const editEl = document.getElementById(editId);
@@ -1260,6 +1276,18 @@
                     editedQuestions[questionIndex].edits[currentLang].pairs[subIndex] = {};
                 }
                 editedQuestions[questionIndex].edits[currentLang].pairs[subIndex].answer = newValue;
+            } else if (section === 'wrong-feedback') {
+                originalParsedQuestions[questionIndex].wrongFeedback = updateMlangText(
+                    originalParsedQuestions[questionIndex].wrongFeedback || '',
+                    currentLang,
+                    newValue
+                );
+            } else if (section === 'correct-feedback') {
+                originalParsedQuestions[questionIndex].correctFeedback = updateMlangText(
+                    originalParsedQuestions[questionIndex].correctFeedback || '',
+                    currentLang,
+                    newValue
+                );
             }
 
             cancelEdit(questionIndex, section, subIndex);
@@ -1529,9 +1557,21 @@
                 answers: []
             };
             
-            if (answersBlock === 'T' || answersBlock === 'TRUE' || answersBlock === 'F' || answersBlock === 'FALSE') {
+            // Check for True/False questions
+            const tfMatch = answersBlock.match(/^(T|TRUE|F|FALSE)\s*(#([^#]*)(#(.*))?)?$/i);
+            if (tfMatch) {
                 question.type = 'trueFalse';
-                question.correctAnswer = answersBlock === 'T' || answersBlock === 'TRUE';
+                const answer = tfMatch[1].toUpperCase();
+                question.correctAnswer = answer === 'T' || answer === 'TRUE';
+
+                // Parse feedback
+                if (tfMatch[3]) {
+                    question.wrongFeedback = tfMatch[3].trim();
+                    if (tfMatch[5]) {
+                        question.correctFeedback = tfMatch[5].trim();
+                    }
+                }
+
                 return question;
             }
             
@@ -1887,7 +1927,7 @@
                 case 'multipleResponse':
                     return renderMultipleChoice(question, questionIndex);
                 case 'trueFalse':
-                    return renderTrueFalse(question);
+                    return renderTrueFalse(question, questionIndex);
                 case 'shortAnswer':
                     return renderShortAnswer(question, questionIndex);
                 case 'matching':
@@ -1978,10 +2018,10 @@
             return html;
         }
 
-        function renderTrueFalse(question) {
+        function renderTrueFalse(question, questionIndex) {
             const t = translations[currentLanguage];
             let html = '<ul class="answers-list">';
-            
+
             const answers = [
                 { text: t.true, isCorrect: true },
                 { text: t.false, isCorrect: false }
@@ -1991,7 +2031,7 @@
                 const correct = (answer.isCorrect === question.correctAnswer);
                 const className = correct ? 'correct' : 'incorrect';
                 const icon = correct ? '✓' : '✗';
-                
+
                 html += `
                     <li class="answer-item ${className}">
                         <div class="answer-marker">${icon}</div>
@@ -2001,8 +2041,64 @@
                     </li>
                 `;
             });
-            
+
             html += '</ul>';
+
+            // Botón para cambiar la respuesta correcta
+            html += `
+                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    <strong>Respuesta correcta actual: ${question.correctAnswer ? t.true : t.false}</strong>
+                    <button class="small secondary" onclick="toggleTrueFalseAnswer(${questionIndex})" style="margin-left: 10px; opacity: 1;">
+                        🔄 Cambiar a ${question.correctAnswer ? t.false : t.true}
+                    </button>
+                </div>
+            `;
+
+            // Mostrar y editar feedbacks
+            if (question.wrongFeedback || question.correctFeedback) {
+                html += '<div style="margin-top: 15px;">';
+
+                if (question.wrongFeedback) {
+                    html += `
+                        <div class="editable-section" style="margin-bottom: 10px;">
+                            <div id="content-${questionIndex}-wrong-feedback">
+                                <strong>Feedback (respuesta incorrecta):</strong>
+                                <div class="answer-feedback">💬 ${escapeHtml(question.wrongFeedback)}</div>
+                            </div>
+                            <div id="edit-${questionIndex}-wrong-feedback" class="edit-mode" style="display: none;">
+                                <textarea>${escapeHtml(question.wrongFeedback)}</textarea>
+                                <div class="edit-mode-buttons">
+                                    <button class="small success" onclick="saveEdit(${questionIndex}, 'wrong-feedback')">${t.save}</button>
+                                    <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'wrong-feedback')">${t.cancel}</button>
+                                </div>
+                            </div>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'wrong-feedback')" style="opacity: 1;">${t.edit}</button>
+                        </div>
+                    `;
+                }
+
+                if (question.correctFeedback) {
+                    html += `
+                        <div class="editable-section">
+                            <div id="content-${questionIndex}-correct-feedback">
+                                <strong>Feedback (respuesta correcta):</strong>
+                                <div class="answer-feedback">💬 ${escapeHtml(question.correctFeedback)}</div>
+                            </div>
+                            <div id="edit-${questionIndex}-correct-feedback" class="edit-mode" style="display: none;">
+                                <textarea>${escapeHtml(question.correctFeedback)}</textarea>
+                                <div class="edit-mode-buttons">
+                                    <button class="small success" onclick="saveEdit(${questionIndex}, 'correct-feedback')">${t.save}</button>
+                                    <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'correct-feedback')">${t.cancel}</button>
+                                </div>
+                            </div>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'correct-feedback')" style="opacity: 1;">${t.edit}</button>
+                        </div>
+                    `;
+                }
+
+                html += '</div>';
+            }
+
             return html;
         }
 
@@ -2173,7 +2269,9 @@
 ~\\{mlang es\\}Berlín\\{mlang\\}\\{mlang en\\}Berlin\\{mlang\\}\\{mlang ca\\}Berlín\\{mlang\\}#\\{mlang es\\}Incorrecto. Berlín es la capital de Alemania.\\{mlang\\}\\{mlang en\\}Incorrect. Berlin is the capital of Germany.\\{mlang\\}\\{mlang ca\\}Incorrecte. Berlín és la capital d'Alemanya.\\{mlang\\}
 }
 
-::Verdadero o Falso::\\{mlang es\\}La Tierra es plana.\\{mlang\\}\\{mlang en\\}The Earth is flat.\\{mlang\\}\\{mlang ca\\}La Terra és plana.\\{mlang\\}{F#\\{mlang es\\}Correcto. La Tierra es esférica.\\{mlang\\}\\{mlang en\\}Correct. The Earth is spherical.\\{mlang\\}\\{mlang ca\\}Correcte. La Terra és esfèrica.\\{mlang\\}}
+::Verdadero o Falso con Feedback::\\{mlang es\\}La Tierra es plana.\\{mlang\\}\\{mlang en\\}The Earth is flat.\\{mlang\\}\\{mlang ca\\}La Terra és plana.\\{mlang\\}{F#\\{mlang es\\}Incorrecto. La Tierra es esférica.\\{mlang\\}\\{mlang en\\}Incorrect. The Earth is spherical.\\{mlang\\}\\{mlang ca\\}Incorrecte. La Terra és esfèrica.\\{mlang\\}#\\{mlang es\\}¡Correcto! La Tierra NO es plana.\\{mlang\\}\\{mlang en\\}Correct! The Earth is NOT flat.\\{mlang\\}\\{mlang ca\\}Correcte! La Terra NO és plana.\\{mlang\\}}
+
+::Verdadero o Falso Simple::\\{mlang es\\}42 es la respuesta absoluta a todo.\\{mlang\\}\\{mlang en\\}42 is the Absolute Answer to everything.\\{mlang\\}\\{mlang ca\\}42 és la resposta absoluta a tot.\\{mlang\\}{FALSE}
 
 ::Respuesta Múltiple::\\{mlang es\\}¿Cuáles de los siguientes son lenguajes de programación?\\{mlang\\}\\{mlang en\\}Which of the following are programming languages?\\{mlang\\}\\{mlang ca\\}Quins dels següents són llenguatges de programació?\\{mlang\\}{
 ~%50%\\{mlang es\\}Python\\{mlang\\}\\{mlang en\\}Python\\{mlang\\}\\{mlang ca\\}Python\\{mlang\\}#\\{mlang es\\}Correcto. Python es un lenguaje de programación.\\{mlang\\}\\{mlang en\\}Correct. Python is a programming language.\\{mlang\\}\\{mlang ca\\}Correcte. Python és un llenguatge de programació.\\{mlang\\}

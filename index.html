@@ -1110,6 +1110,33 @@
             updateExportSection();
         }
 
+        function saveNumericalEdit(questionIndex, answerIndex) {
+            const valueInput = document.getElementById(`numerical-value-${questionIndex}-${answerIndex}`);
+            const marginInput = document.getElementById(`numerical-margin-${questionIndex}-${answerIndex}`);
+            const weightInput = document.getElementById(`numerical-weight-${questionIndex}-${answerIndex}`);
+
+            const newValue = parseFloat(valueInput.value) || 0;
+            const newMargin = parseFloat(marginInput.value) || 0;
+            const newWeight = parseInt(weightInput.value) || 100;
+
+            originalParsedQuestions[questionIndex].answers[answerIndex].value = newValue;
+            originalParsedQuestions[questionIndex].answers[answerIndex].margin = newMargin;
+            originalParsedQuestions[questionIndex].answers[answerIndex].weight = newWeight;
+
+            const currentLang = questionLanguageOverrides[questionIndex] || selectedContentLanguage || 'default';
+            if (!editedQuestions[questionIndex]) {
+                editedQuestions[questionIndex] = {
+                    langs: new Set(),
+                    edits: {}
+                };
+            }
+            editedQuestions[questionIndex].langs.add(currentLang);
+
+            cancelEdit(questionIndex, 'numerical', answerIndex);
+            filterAndDisplayQuestions();
+            updateExportSection();
+        }
+
         function saveEdit(questionIndex, section, subIndex = null) {
             const editId = `edit-${questionIndex}-${section}${subIndex !== null ? '-' + subIndex : ''}`;
             const editEl = document.getElementById(editId);
@@ -1191,6 +1218,16 @@
                     editedQuestions[questionIndex].edits[currentLang].pairs[subIndex] = {};
                 }
                 editedQuestions[questionIndex].edits[currentLang].pairs[subIndex].answer = newValue;
+            } else if (section === 'numerical-feedback' && subIndex !== null) {
+                originalParsedQuestions[questionIndex].answers[subIndex].feedback = updateMlangText(
+                    originalParsedQuestions[questionIndex].answers[subIndex].feedback || '',
+                    currentLang,
+                    newValue
+                );
+                if (!editedQuestions[questionIndex].edits[currentLang].numericalFeedbacks) {
+                    editedQuestions[questionIndex].edits[currentLang].numericalFeedbacks = {};
+                }
+                editedQuestions[questionIndex].edits[currentLang].numericalFeedbacks[subIndex] = newValue;
             }
 
             cancelEdit(questionIndex, section, subIndex);
@@ -1815,7 +1852,7 @@
                 case 'matching':
                     return renderMatching(question, questionIndex);
                 case 'numerical':
-                    return renderNumerical(question);
+                    return renderNumerical(question, questionIndex);
                 case 'essay':
                     return renderEssay(question);
                 default:
@@ -2025,23 +2062,54 @@
             return html;
         }
 
-        function renderNumerical(question) {
+        function renderNumerical(question, questionIndex) {
             const t = translations[currentLanguage];
             let html = '<div>';
-            
-            question.answers.forEach(answer => {
+
+            question.answers.forEach((answer, answerIndex) => {
                 html += `
-                    <div class="numerical-answer" style="background: ${answer.weight === 100 ? '#d4edda' : '#fff3cd'}; border-color: ${answer.weight === 100 ? '#28a745' : '#ffc107'}; margin-bottom: 10px;">
-                        <div class="numerical-value">
-                            ${answer.value}${answer.margin > 0 ? ` ± ${answer.margin}` : ''}
-                            ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                    <div class="numerical-answer" style="background: ${answer.weight === 100 ? '#d4edda' : '#fff3cd'}; border-color: ${answer.weight === 100 ? '#28a745' : '#ffc107'}; margin-bottom: 10px; position: relative;">
+                        <div class="editable-section">
+                            <div id="content-${questionIndex}-numerical-${answerIndex}">
+                                <div class="numerical-value">
+                                    ${answer.value}${answer.margin > 0 ? ` ± ${answer.margin}` : ''}
+                                    ${answer.weight !== 100 ? `<span class="answer-weight">${answer.weight}%</span>` : ''}
+                                </div>
+                                ${answer.margin > 0 ? `<div class="numerical-details">${t.acceptedRange} ${answer.value - answer.margin} a ${answer.value + answer.margin}</div>` : ''}
+                            </div>
+                            <div id="edit-${questionIndex}-numerical-${answerIndex}" class="edit-mode" style="display: none;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Valor:</label>
+                                <input type="number" step="any" value="${answer.value}" id="numerical-value-${questionIndex}-${answerIndex}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Margen de error:</label>
+                                <input type="number" step="any" value="${answer.margin}" id="numerical-margin-${questionIndex}-${answerIndex}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Peso (%):</label>
+                                <input type="number" min="0" max="100" value="${answer.weight}" id="numerical-weight-${questionIndex}-${answerIndex}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                                <div class="edit-mode-buttons">
+                                    <button class="small success" onclick="saveNumericalEdit(${questionIndex}, ${answerIndex})">${t.save}</button>
+                                    <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'numerical', ${answerIndex})">${t.cancel}</button>
+                                </div>
+                            </div>
+                            <button class="small edit-button" onclick="startEdit(${questionIndex}, 'numerical', ${answerIndex})" style="opacity: 1;">${t.edit}</button>
                         </div>
-                        ${answer.margin > 0 ? `<div class="numerical-details">${t.acceptedRange} ${answer.value - answer.margin} a ${answer.value + answer.margin}</div>` : ''}
-                        ${answer.feedback ? `<div class="answer-feedback">💬 ${escapeHtml(answer.feedback)}</div>` : ''}
+                        ${answer.feedback ? `
+                            <div class="editable-section" style="margin-top: 10px;">
+                                <div id="content-${questionIndex}-numerical-feedback-${answerIndex}" class="answer-feedback">
+                                    💬 ${escapeHtml(answer.feedback)}
+                                </div>
+                                <div id="edit-${questionIndex}-numerical-feedback-${answerIndex}" class="edit-mode" style="display: none;">
+                                    <textarea>${escapeHtml(answer.feedback)}</textarea>
+                                    <div class="edit-mode-buttons">
+                                        <button class="small success" onclick="saveEdit(${questionIndex}, 'numerical-feedback', ${answerIndex})">${t.save}</button>
+                                        <button class="small secondary" onclick="cancelEdit(${questionIndex}, 'numerical-feedback', ${answerIndex})">${t.cancel}</button>
+                                    </div>
+                                </div>
+                                <button class="small edit-button" onclick="startEdit(${questionIndex}, 'numerical-feedback', ${answerIndex})">${t.edit}</button>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             });
-            
+
             html += '</div>';
             return html;
         }

@@ -1224,6 +1224,7 @@
                 <button onclick="parseGIFT()" id="parseBtn">🔍 Visualizar Preguntas</button>
                 <button class="secondary" onclick="loadExample()" id="exampleBtn">📝 Cargar Ejemplo</button>
                 <button class="secondary" onclick="clearAll()" id="clearBtn">🗑️ Limpiar</button>
+                <button class="info" onclick="downloadOriginalGiftFile()" id="downloadOriginalBtn" style="display: none;">💾 Descargar Código Original</button>
             </div>
             <div id="contentLanguageSelectorContainer" style="display: none; margin-top: 20px; background: #eef2f5; padding: 15px; border-radius: 6px; border: 1px solid #ddd;">
                 <p id="detectedLanguagesInfo" style="font-size: 0.9em; color: #555; margin-bottom: 10px;"></p>
@@ -1291,6 +1292,7 @@
                 exportTitle: '📤 Exportar Código GIFT Editado',
                 copyBtn: '📋 Copiar Código',
                 downloadBtn: '💾 Descargar Archivo',
+                downloadOriginalBtn: '💾 Descargar Código Original',
                 copiedSuccess: '✅ Código copiado al portapapeles',
                 types: {
                     multipleChoice: 'Opción múltiple',
@@ -1387,6 +1389,7 @@
                 exportTitle: '📤 Exportar Codi GIFT Editat',
                 copyBtn: '📋 Copiar Codi',
                 downloadBtn: '💾 Descarregar Fitxer',
+                downloadOriginalBtn: '💾 Descarregar Codi Original',
                 copiedSuccess: '✅ Codi copiat al portapapers',
                 types: {
                     multipleChoice: 'Opció múltiple',
@@ -1483,6 +1486,7 @@
                 exportTitle: '📤 Export Edited GIFT Code',
                 copyBtn: '📋 Copy Code',
                 downloadBtn: '💾 Download File',
+                downloadOriginalBtn: '💾 Download Original Code',
                 copiedSuccess: '✅ Code copied to clipboard',
                 types: {
                     multipleChoice: 'Multiple choice',
@@ -1596,7 +1600,8 @@
             document.getElementById('exportTitle').textContent = t.exportTitle;
             document.getElementById('copyBtn').textContent = t.copyBtn;
             document.getElementById('downloadBtn').textContent = t.downloadBtn;
-            
+            document.getElementById('downloadOriginalBtn').textContent = t.downloadOriginalBtn;
+
             const footerText = document.getElementById('footerCreated');
             footerText.innerHTML = `${t.footerCreated} <strong>José Luis Miralles Bono</strong>`;
 
@@ -2488,6 +2493,19 @@
             URL.revokeObjectURL(url);
         }
 
+        function downloadOriginalGiftFile() {
+            const giftCode = document.getElementById('giftInput').value;
+            const blob = new Blob([giftCode], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'preguntas.gift';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
         function parseGIFT() {
             const input = document.getElementById('giftInput').value;
             const output = document.getElementById('output');
@@ -2510,7 +2528,8 @@
                         <p>${t.emptyText}</p>
                     </div>
                 `;
-                updateContentLanguageSelector(); 
+                updateContentLanguageSelector();
+                document.getElementById('downloadOriginalBtn').style.display = 'none';
                 return;
             }
 
@@ -2528,14 +2547,17 @@
                 if (originalParsedQuestions.length === 0) {
                     output.innerHTML = `<div class="error-message">${t.noQuestionsFound}</div>`;
                     document.getElementById('contentLanguageSelectorContainer').style.display = 'none';
+                    document.getElementById('downloadOriginalBtn').style.display = 'none';
                     return;
                 }
 
                 filterAndDisplayQuestions();
+                document.getElementById('downloadOriginalBtn').style.display = 'inline-block';
 
             } catch (error) {
                 output.innerHTML = `<div class="error-message">${t.errorParsing} ${error.message}</div>`;
                 document.getElementById('contentLanguageSelectorContainer').style.display = 'none';
+                document.getElementById('downloadOriginalBtn').style.display = 'none';
             }
         }
 
@@ -3481,6 +3503,7 @@
             questionLanguageOverrides = {};
             editedQuestions = {};
             document.getElementById('exportSection').classList.remove('visible');
+            document.getElementById('downloadOriginalBtn').style.display = 'none';
         }
 
         window.addEventListener('load', () => {

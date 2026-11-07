@@ -1246,7 +1246,8 @@
 
         <footer>
             <p id="footerCreated">Creado por <strong>José Luis Miralles Bono</strong></p>
-            <p><a href="https://www.jlmirall.es" target="_blank" rel="noopener noreferrer">www.jlmirall.es</a></p>
+            <p id="footerMore"></p>
+            <p id="footerLicense" style="font-size: 0.8em; opacity: 0.85;"></p>
             <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
                 <p id="kofiText" style="margin-bottom: 10px; font-size: 0.95em; opacity: 0.9;"></p>
                 <a href="https://ko-fi.com/miralles" target="_blank" rel="noopener noreferrer" class="kofi-link">
@@ -1272,6 +1273,9 @@
                 contentLangLabel: '🌍 Ver pregunta en el idioma:',
                 detectedLangsLabel: 'Idiomas detectados:',
                 footerCreated: 'Creado por',
+                footerHelp: 'con ayuda de Claude',
+                footerMore: '<a href="https://elpulpoenelvaso.jlmirall.es/?p=521" target="_blank" rel="noopener">Más información sobre este proyecto</a>',
+                footerLicense: 'Código bajo licencia <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="license" target="_blank">AGPL v3</a> · contenidos bajo <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" rel="license" target="_blank">CC BY-SA 4.0</a> · <a href="https://github.com/JLMirallesB/Moodle_GIFT_viewer" target="_blank" rel="noopener">código fuente</a>',
                 emptyTitle: 'No hay preguntas para mostrar',
                 emptyText: 'Ingresa código GIFT en el área de texto superior',
                 noQuestionsFound: 'No se encontraron preguntas válidas en el código GIFT proporcionado.',
@@ -1369,6 +1373,9 @@
                 contentLangLabel: '🌍 Veure pregunta en l\'idioma:',
                 detectedLangsLabel: 'Idiomes detectats:',
                 footerCreated: 'Creat per',
+                footerHelp: 'amb ajuda de Claude',
+                footerMore: '<a href="https://elpulpoenelvaso.jlmirall.es/?p=521" target="_blank" rel="noopener">Més informació sobre aquest projecte</a>',
+                footerLicense: 'Codi amb llicència <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="license" target="_blank">AGPL v3</a> · continguts amb llicència <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" rel="license" target="_blank">CC BY-SA 4.0</a> · <a href="https://github.com/JLMirallesB/Moodle_GIFT_viewer" target="_blank" rel="noopener">codi font</a>',
                 emptyTitle: 'No hi ha preguntes per mostrar',
                 emptyText: 'Introdueix codi GIFT a l\'àrea de text superior',
                 noQuestionsFound: 'No s\'han trobat preguntes vàlides al codi GIFT proporcionat.',
@@ -1466,6 +1473,9 @@
                 contentLangLabel: '🌍 View question in language:',
                 detectedLangsLabel: 'Detected languages:',
                 footerCreated: 'Created by',
+                footerHelp: 'with the help of Claude',
+                footerMore: '<a href="https://elpulpoenelvaso.jlmirall.es/?p=521" target="_blank" rel="noopener">More about this project</a>',
+                footerLicense: 'Code licensed under <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="license" target="_blank">AGPL v3</a> · content under <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en" rel="license" target="_blank">CC BY-SA 4.0</a> · <a href="https://github.com/JLMirallesB/Moodle_GIFT_viewer" target="_blank" rel="noopener">source code</a>',
                 emptyTitle: 'No questions to display',
                 emptyText: 'Enter GIFT code in the text area above',
                 noQuestionsFound: 'No valid questions found in the provided GIFT code.',
@@ -1603,7 +1613,9 @@
             document.getElementById('downloadOriginalBtn').textContent = t.downloadOriginalBtn;
 
             const footerText = document.getElementById('footerCreated');
-            footerText.innerHTML = `${t.footerCreated} <strong>José Luis Miralles Bono</strong>`;
+            footerText.innerHTML = `${t.footerCreated} <a href="https://jlmirall.es" target="_blank" rel="noopener noreferrer"><strong>José Luis Miralles Bono</strong></a> ${t.footerHelp} · <a href="mailto:joseluismirallesbono@gmail.com">joseluismirallesbono@gmail.com</a>`;
+            document.getElementById('footerMore').innerHTML = t.footerMore;
+            document.getElementById('footerLicense').innerHTML = t.footerLicense;
 
             const infoEl = document.getElementById('detectedLanguagesInfo');
             if (detectedContentLanguages.size > 0) {

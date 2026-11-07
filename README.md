@@ -41,11 +41,11 @@ La herramienta detectará los idiomas es y en y te permitirá elegir cuál visua
 * 🌐 **Asistente para convertir a Mlang:** ¿Ya tienes tus preguntas en un idioma? Este asistente añadirá el código mlang para que sean multilingües.  
   * **Enlace:** [https://elpulpoenelvaso.jlmirall.es/?p=432](https://elpulpoenelvaso.jlmirall.es/?p=432)
 
-Creado por **José Luis Miralles Bono** | [www.jlmirall.es](https://www.jlmirall.es)  
+Creado por **José Luis Miralles Bono** | [jlmirall.es](https://jlmirall.es) · joseluismirallesbono@gmail.com  
 
 🇬🇧 \<strong\>English\</strong\>
 A simple and powerful web tool for teachers and content creators to preview questions in Moodle's **GIFT format** before importing them into their courses. The tool fully supports the **multilingual filter (mlang)**, allowing verification that questions will display correctly in each language.  
-🔗 [**Access the tool here**](https://www.google.com/search?q=https://jlmirall.es/gift-viewer/](https://jlmirallesb.github.io/Moodle_GIFT_viewer/)
+🔗 [**Access the tool here**](https://jlmirallesb.github.io/Moodle_GIFT_viewer/)
 
 ### **🤔 What are these technologies?**
 
@@ -84,7 +84,7 @@ Need help creating complex GIFT questions? Use these custom GPT-based assistants
 * 🌐 **Mlang Converter Assistant:** Already have your questions in one language? This assistant will add the mlang code to make them multilingual.  
   * **Link:** [https://elpulpoenelvaso.jlmirall.es/?p=432](https://elpulpoenelvaso.jlmirall.es/?p=432)
 
-Created by **José Luis Miralles Bono** | [www.jlmirall.es](https://www.jlmirall.es)  
+Created by **José Luis Miralles Bono** | [jlmirall.es](https://jlmirall.es) · joseluismirallesbono@gmail.com  
 
 
 CAT \<strong\>Català\</strong\>
@@ -128,5 +128,17 @@ Necessites ajuda per crear preguntes GIFT complexes? Utilitza aquests assistents
 * 🌐 **Assistent per a convertir a Mlang:** Ja tens les teves preguntes en un idioma? Aquest assistent afegirà el codi mlang perquè siguin multilingües.  
   * **Enllaç:** [https://elpulpoenelvaso.jlmirall.es/?p=432](https://elpulpoenelvaso.jlmirall.es/?p=432)
 
-Creat per **José Luis Miralles Bono** | [www.jlmirall.es](https://www.jlmirall.es)  
+Creat per **José Luis Miralles Bono** | [jlmirall.es](https://jlmirall.es) · joseluismirallesbono@gmail.com  
 \</details\>
+
+**Más información:** [Visualizador GIFT de Moodle](https://elpulpoenelvaso.jlmirall.es/?p=521) · ☕ [Invítame a una horchata](https://ko-fi.com/miralles)
+
+## Licencia
+
+© 2025 José Luis Miralles Bono ([jlmirall.es](https://jlmirall.es)) · joseluismirallesbono@gmail.com
+
+- **Código:** [GNU AGPL v3](LICENSE). Puedes usarlo, estudiarlo, modificarlo y redistribuirlo, también con
+  fines comerciales, siempre que lo que derives se publique con la misma licencia y con su código fuente
+  disponible, también si lo ofreces como servicio web.
+- **Contenidos** (textos, explicaciones, imágenes): [CC BY-SA 4.0](LICENSE-CONTENIDOS). Puedes compartirlos
+  y adaptarlos citando la autoría y publicando lo que derives con esta misma licencia.
